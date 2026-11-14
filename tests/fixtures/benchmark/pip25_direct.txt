@@ -1,0 +1,19 @@
+Looking in links: <wheels>/planted_direct_d1_none_s0/wheels
+Processing <wheels>/planted_direct_d1_none_s0/wheels/glyph-1.1.0-py3-none-any.whl
+Processing <wheels>/planted_direct_d1_none_s0/wheels/tamarack-2.0.0-py3-none-any.whl
+Processing <wheels>/planted_direct_d1_none_s0/wheels/beacon-1.7.0-py3-none-any.whl (from glyph>=1.1.0)
+INFO: pip is looking at multiple versions of tamarack to determine which version is compatible with other requirements. This could take a while.
+Processing <wheels>/planted_direct_d1_none_s0/wheels/tamarack-1.0.0-py3-none-any.whl
+ERROR: Cannot install glyph==1.1.0, tamarack==1.0.0 and tamarack==2.0.0 because these package versions have conflicting dependencies.
+
+The conflict is caused by:
+    glyph 1.1.0 depends on beacon<1.7.1
+    tamarack 2.0.0 depends on beacon>=1.7.1
+    glyph 1.1.0 depends on beacon<1.7.1
+    tamarack 1.0.0 depends on beacon>=1.7.1
+
+To fix this you could try to:
+1. loosen the range of package versions you've specified
+2. remove package versions to allow pip to attempt to solve the dependency conflict
+
+ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
