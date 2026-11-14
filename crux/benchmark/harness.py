@@ -216,6 +216,9 @@ def message_row(inst: Instance, run: Run) -> dict:
             roots=[canonicalize_name(d) for d, _ in inst.roots],
             core_packages=inst.meta.get("core_packages"),
             has_releases=lambda p: bool(inst.graph.get(canonicalize_name(p)))))
+        original = inst.meta.get("original_conflict")
+        if original:   # real cases: does it blame what pip blamed for the user?
+            row["original_overlap"] = bool(set(row["named_list"].split()) & set(original))
     if run.status == "SAT" and run.plan is not None:
         prob = inst.problem()
         plan = {p: Version(v) for p, v in run.plan.items()}
