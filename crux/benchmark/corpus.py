@@ -263,3 +263,69 @@ def screen(issues) -> list[Case]:
             c.drop("duplicate")
         seen.add(key)
     return cases
+
+
+# ── command line ─────────────────────────────────────────────────────
+
+def verify(raw_issues, cases) -> list[str]:
+    """Check every kept case against the text it was extracted from:
+    the post's hash matches, and every snippet line occurs in the post.
+    Returns a list of problems (empty means verified)."""
+    import hashlib
+    bodies = {i["url"]: i.get("body") or "" for i in raw_issues}
+    problems = []
+    for c in cases:
+        if c["status"] != "kept":
+            continue
+        body = bodies.get(c["url"])
+        if body is None:
+            problems.append(f"{c['url']}: not in the collected issues")
+            continue
+        if hashlib.sha256(body.encode()).hexdigest() != c["body_sha256"]:
+            problems.append(f"{c['url']}: post text differs from the hash")
+        for line in c["snippet"].splitlines():
+            if line.strip() and line.strip() not in body:
+                problems.append(f"{c['url']}: snippet line not in post: {line[:60]!r}")
+        for r in c["requirements"]:
+            name = re.split(r"[<>=!~;\[ ]", r, maxsplit=1)[0]
+            if name.lower() not in c["snippet"].lower():
+                problems.append(f"{c['url']}: {name} not in its snippet")
+    return problems
+
+
+def main(argv=None) -> int:
+    import argparse
+    import dataclasses
+    import json
+    import sys
+    from collections import Counter
+
+    ap = argparse.ArgumentParser(description="screen or verify the corpus")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("screen")
+    s.add_argument("--raw", required=True)
+    s.add_argument("--out", required=True)
+    v = sub.add_parser("verify")
+    v.add_argument("--raw", required=True)
+    v.add_argument("--screened", required=True)
+    a = ap.parse_args(argv)
+    raw = [json.loads(l) for l in open(a.raw)]
+    if a.cmd == "screen":
+        cases = screen(raw)
+        with open(a.out, "w") as f:
+            for c in cases:
+                f.write(json.dumps(dataclasses.asdict(c), sort_keys=True) + "\n")
+        print(Counter((c.status, c.reason) for c in cases))
+        return 0
+    cases = [json.loads(l) for l in open(a.screened)]
+    problems = verify(raw, cases)
+    kept = sum(c["status"] == "kept" for c in cases)
+    for p in problems:
+        print(p)
+    print(f"verified {kept} kept cases: {len(problems)} problems")
+    return 1 if problems else 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())

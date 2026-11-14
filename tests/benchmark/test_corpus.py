@@ -111,3 +111,18 @@ def test_later_duplicates_are_dropped():
     cases = {c.url: c for c in screen([b, a])}
     assert cases[a["url"]].status == "kept"
     assert cases[b["url"]].reason == "duplicate"
+
+
+def test_verify_accepts_a_faithful_case_and_catches_tampering():
+    import dataclasses
+    import hashlib
+
+    from crux.benchmark.corpus import verify
+    raw = issue(PIP_A)
+    raw["body_sha256"] = hashlib.sha256(PIP_A.encode()).hexdigest()
+    case = dataclasses.asdict(screen_issue(raw))
+    assert verify([raw], [case]) == []
+    forged = dict(case, snippet=case["snippet"] + "\nThe user requested evil==1")
+    assert verify([raw], [forged])
+    edited = dict(raw, body=PIP_A + " edited")
+    assert verify([edited], [case])
