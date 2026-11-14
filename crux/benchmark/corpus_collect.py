@@ -11,6 +11,8 @@ Sources (each a GitHub issue search; only the issue's opening post is used):
   gh    ResolutionImpossible in issues of any repository,
         2024-01-01 .. 2026-10-31, queried month by month (search returns at
         most 1,000 results per query)
+  uvgh  uv's "No solution found when resolving" in issues outside uv's own
+        tracker, 2024-01-01 .. 2026-10-31, month by month
 
 The proposal names "the pip issue tracker and public Q&A threads".  pip's
 tracker alone has too few reports since 2024 (23 when checked) and the
@@ -57,6 +59,9 @@ def queries():
                  f"is:issue created:2024-01-01..{SNAPSHOT_END}")
     for a, b in _months("2024-01-01", SNAPSHOT_END):
         yield "gh", f"ResolutionImpossible is:issue created:{a}..{b}"
+    for a, b in _months("2024-01-01", SNAPSHOT_END):
+        yield "uvgh", ('"No solution found when resolving" is:issue '
+                       f"-repo:astral-sh/uv created:{a}..{b}")
 
 
 def _get(url: str) -> dict:
@@ -84,12 +89,18 @@ def search(query: str, log=print):
         log(f"  warning: {total} results for {query!r}; only 1,000 reachable")
 
 
-def collect(out: Path, log=print) -> int:
+def collect(out: Path, log=print, sources=None, append=False) -> int:
+    """Run the searches (only ``sources`` if given).  With ``append``, add to
+    an existing file and skip issues already in it."""
     seen, n = set(), 0
+    if append and out.exists():
+        seen = {json.loads(l)["url"] for l in out.open(encoding="utf-8")}
     fetched_at = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("w", encoding="utf-8") as f:
+    with out.open("a" if append else "w", encoding="utf-8") as f:
         for source, q in queries():
+            if sources and source not in sources:
+                continue
             k = 0
             for it in search(q, log):
                 if "pull_request" in it:          # issues only
@@ -116,8 +127,13 @@ def collect(out: Path, log=print) -> int:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="collect candidate issues")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--sources", help="comma-separated subset of pip,uv,gh,uvgh")
+    ap.add_argument("--append", action="store_true",
+                    help="add to an existing file, skipping issues already in it")
     a = ap.parse_args(argv)
-    n = collect(Path(a.out), log=lambda s: print(s, flush=True))
+    n = collect(Path(a.out), log=lambda s: print(s, flush=True),
+                sources=a.sources.split(",") if a.sources else None,
+                append=a.append)
     print(f"saved {n} issues to {a.out}")
     return 0
 
