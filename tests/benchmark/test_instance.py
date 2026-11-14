@@ -64,3 +64,12 @@ def test_instance_builds_the_resolver_problem():
 def test_core_requires_unsat():
     with pytest.raises(ValueError):
         Instance("x", {}, (), "SAT", frozenset())
+
+
+def test_gzip_round_trip_is_reproducible(tmp_path):
+    inst = _toy()
+    a, b = tmp_path / "a.jsonl.gz", tmp_path / "b.jsonl.gz"
+    dump_jsonl([inst], a)
+    dump_jsonl([inst], b)
+    assert load_jsonl(a) == [inst]
+    assert a.read_bytes() == b.read_bytes()

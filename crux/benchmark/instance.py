@@ -24,6 +24,8 @@ the ground truth is plain set arithmetic.
 
 from __future__ import annotations
 
+import gzip
+import io
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -107,11 +109,37 @@ class Instance:
         )
 
 
+class _Closing:
+    """Text wrapper that also closes the underlying raw file."""
+
+    def __init__(self, text, raw):
+        self.text, self.raw = text, raw
+
+    def __enter__(self):
+        return self.text
+
+    def __exit__(self, *exc):
+        self.text.close()          # flushes and closes the GzipFile
+        self.raw.close()
+
+
+def _open(path: Path, mode: str):
+    """Plain or gzip-compressed (``.gz``) text file; gzip output is
+    byte-for-byte reproducible (no timestamp or file name in the header)."""
+    if path.suffix == ".gz":
+        if "w" in mode:
+            gz = gzip.GzipFile(filename="", fileobj=open(path, "wb"), mode="wb",
+                               mtime=0)
+            return _Closing(io.TextIOWrapper(gz, encoding="utf-8"), gz.fileobj)
+        return gzip.open(path, "rt", encoding="utf-8")
+    return path.open(mode, encoding="utf-8")
+
+
 def dump_jsonl(instances: Iterable[Instance], path) -> int:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     n = 0
-    with path.open("w", encoding="utf-8") as f:
+    with _open(path, "w") as f:
         for inst in instances:
             f.write(json.dumps(inst.to_json(), sort_keys=True) + "\n")
             n += 1
@@ -119,5 +147,5 @@ def dump_jsonl(instances: Iterable[Instance], path) -> int:
 
 
 def load_jsonl(path) -> list[Instance]:
-    with Path(path).open(encoding="utf-8") as f:
+    with _open(Path(path), "r") as f:
         return [Instance.from_json(json.loads(line)) for line in f if line.strip()]

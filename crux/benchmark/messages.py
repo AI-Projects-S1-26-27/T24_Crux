@@ -33,7 +33,10 @@ false_unavailable   pip only: packages pip lists as having "no matching
             requirements (pip 26.2.1, pip/_internal/resolution/resolvelib/
             factory.py).  Reproduced against real PyPI: pip 26.2.1 lists
             botocore for ``boto3==1.34.0 botocore==1.29.0``; pip 25.0.1 does
-            not print the section.
+            not print the section.  This is a known, open pip bug:
+            https://github.com/pypa/pip/issues/14193 (fix proposed in
+            https://github.com/pypa/pip/pull/14194; both open on 2026-11-14).
+            We measure how often it appears; we did not discover it.
 """
 
 from __future__ import annotations
@@ -107,6 +110,7 @@ def measure(tool: str, stdout: str, stderr: str, *, packages, roots,
         "msg_lines": _nonempty(msg),
         "out_lines": _nonempty(stdout) + _nonempty(stderr),
         "named": len(named),
+        "named_list": " ".join(sorted(named)),
         "names_root": bool(named & set(roots)),
     }
     if core_packages is not None:
