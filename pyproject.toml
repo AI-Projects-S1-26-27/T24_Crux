@@ -20,7 +20,7 @@ build-backend = "setuptools.build_meta"
 # build, so `pip install -e .` fails and the solver team cannot import crux
 # from outside the repository root.
 [tool.setuptools]
-packages = ["crux", "crux.data", "crux.resolver"]
+packages = ["crux", "crux.data", "crux.resolver", "crux.explain"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
