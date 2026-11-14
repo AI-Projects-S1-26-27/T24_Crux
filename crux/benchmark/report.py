@@ -144,13 +144,17 @@ def depth_table(outcomes, names):
     deep = [r for r in outcomes if r["kind"] == "deep" and r["status"] == "UNSAT"]
     depths = sorted({int(r["depth"]) for r in deep})
     rows = []
+    tools = ("uv", "pip", "pip-baseline")
     for d in depths:
         row = [d]
-        for tool in ("uv", "pip", "pip-baseline"):
+        for tool in tools:
             rs = [r for r in deep if r["tool"] == tool and int(r["depth"]) == d]
-            row.append(f"{_fmt(_med(_f(r['msg_lines']) for r in rs), 0)} (n={len(rs)})")
+            rec = [_f(r["core_recall"]) for r in rs if r.get("core_recall")]
+            row.append(f"{_fmt(_med(_f(r['msg_lines']) for r in rs), 0)} lines, "
+                       f"names {_fmt(statistics.mean(rec) if rec else None)} "
+                       f"of the core (n={len(rs)})")
         rows.append(row)
-    return _table(["depth"] + [names[t] for t in ("uv", "pip", "pip-baseline")], rows), deep
+    return _table(["depth"] + [names[t] for t in tools], rows), deep
 
 
 def crux_table(crux):
@@ -199,23 +203,32 @@ def figures(out: Path, planted_out, deep, crux, names, funnel=None):
     colors = {"uv": "#2a7ab9", "pip": "#c4452f", "pip-baseline": "#e3a33b",
               "crux-e2e": "#3c8d4f"}
     # 1. message length by conflict depth
-    fig, ax = plt.subplots(figsize=(6.4, 4))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10, 4))
     depths = sorted({int(r["depth"]) for r in deep})
     styles = {"uv": ("o", "-", -0.08), "pip": ("s", "--", 0.0),
               "pip-baseline": ("^", ":", 0.08)}
     for tool in ("uv", "pip", "pip-baseline"):
         mk, ls, dx = styles[tool]
-        ys = [_med(_f(r["msg_lines"]) for r in deep
-                   if r["tool"] == tool and int(r["depth"]) == d) for d in depths]
-        n = sum(1 for r in deep if r["tool"] == tool)
+        at = {d: [r for r in deep if r["tool"] == tool and int(r["depth"]) == d]
+              for d in depths}
+        ys = [_med(_f(r["msg_lines"]) for r in at[d]) for d in depths]
+        rec = [statistics.mean(_f(r["core_recall"]) for r in at[d]) if at[d] else None
+               for d in depths]
+        n = sum(len(v) for v in at.values())
         ax.plot([d + dx for d in depths], ys, marker=mk, ls=ls,
                 label=f"{names[tool]} (n={n})", color=colors[tool])
-    ax.set_xticks(depths)
-    ax.set_xlabel("depth of the planted conflict (longest chain)")
+        ax2.plot([d + dx for d in depths], rec, marker=mk, ls=ls, color=colors[tool])
+    for a_ in (ax, ax2):
+        a_.set_xticks(depths)
+        a_.set_xlabel("depth of the planted conflict (longest chain)")
     ax.set_ylabel("lines in the error message (median)")
-    ax.set_title("Message length as the conflict gets deeper (planted, 'deep')")
+    ax.set_title("Message length")
     ax.set_ylim(bottom=0)
-    ax.legend()
+    ax.legend(fontsize=8)
+    ax2.set_ylabel("share of the true conflict's packages named (mean)")
+    ax2.set_title("How much of the true conflict it names")
+    ax2.set_ylim(0, 1.05)
+    fig.suptitle("Error messages as the planted conflict gets deeper ('deep' instances)")
     fig.tight_layout()
     fig.savefig(fig_dir / "message_lines_by_depth.png", dpi=150)
     plt.close(fig)
