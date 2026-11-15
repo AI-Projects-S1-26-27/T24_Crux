@@ -729,5 +729,5 @@ All entries are 2026-11-14 unless stated.
   planted minimal core on 168 of 198 planted instances and contains it on all; C0 timed out on
   37 planted (31 of the 66 with large noise), C4 on none. On real data AC-3 now shows a benefit
   (5 real conflicts where C0 timed out after 125,864 to 971,446 nodes and C1 needed 0), C2 to
-  C4 none beyond it; all 25 C1-C4 timeouts at 10 s were at 0 nodes on the 5 largest graphs,
-  and profiling one shows 92% of the time in `Graph.allowed()` (section 8's `==X` fast path).
+  C4 none beyond it; all 25 C1-C4 timeouts at 10 s were at 0 nodes on 5 of the 6 largest
+  graphs, and profiling one shows 91 to 92% of the time in `Graph.allowed()` (section 8's `==X` fast path).

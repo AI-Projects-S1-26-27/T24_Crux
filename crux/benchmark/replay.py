@@ -15,11 +15,11 @@ root_unavailable     a requested package has no release meeting the request
 not_reproduced       Crux finds an install plan: no failure on this data
 timeout              Crux did not finish within the limit
 missing_dependency   unsatisfiable, but only because some dependency has no
-                     usable release (e.g. sdist-only): with every edge into
+                     usable release (e.g. no wheel for CPython 3.12): with every edge into
                      such a package switched off, a plan exists.  A data-layer
                      artefact, not a dependency conflict.
 reproduced           unsatisfiable, and still unsatisfiable with those edges
-                     off: a genuine dependency conflict among the requested
+                     off: a dependency conflict among the requested
                      packages on real metadata.  These form the corpus.
 
 ``same_packages`` (reproduced only): the replayed conflict involves at least

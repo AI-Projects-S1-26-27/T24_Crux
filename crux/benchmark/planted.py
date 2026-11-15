@@ -46,8 +46,8 @@ Background packages form a DAG with a known working version each; gadget
 releases get extra dependencies on them, so the conflict is buried among
 constraints that do not matter.  Background never depends on the gadget.
 Edges per background release are drawn so the average is about 2 with a
-quarter of releases having none, roughly the pilot's 2.2 and 25%
-(docs/PILOT.md).  This is a rough shape match, not a fitted model.
+quarter of releases having none; the committed suite comes out at 1.9 and
+29%, near the pilot's 2.2 and 25% (docs/PILOT.md).  This is a rough shape match, not a fitted model.
 
 CLI:  python -m crux.benchmark.planted --out benchmarks/planted/instances.jsonl
 """

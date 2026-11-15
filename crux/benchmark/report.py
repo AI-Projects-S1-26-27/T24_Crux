@@ -319,7 +319,8 @@ def real_cores_section(cores: Path) -> str:
         out += ["", f"Why the missing versions are missing ({k} cores with such a "
                 "member; one core can have several reasons): "
                 + ", ".join(f"`{x}` {rs[x]}" for x in sorted(rs, key=lambda x: -rs[x]))
-                + " (`no_wheel`: source-only release, outside the snapshot's scope)."]
+                + " (`no_wheel`: no wheel for CPython 3.12 on Linux x86-64, outside "
+                "the snapshot's scope)."]
     out += ["", "What pip's and uv's messages name, scored against the cores that "
             "are the only minimal core (as for planted cores):", ""]
     mt = []
@@ -514,13 +515,13 @@ def corpus_section(corpus: Path, real_outcomes=None):
                   "replayed data, name at least one package that pip named for the "
                   f"user? Yes for **{len(faithful)} of {len(with_lines)}**. "
                   f"{len(no_lines)} reproduced cases have no conflict lines to compare "
-                  "(their request came from a command, or from uv); they are genuine "
+                  "(their request came from a command, or from uv); they are "
                   "conflicts on real metadata, but not shown to be the reporter's."]
     funnel = [("issues collected", len(issues)), ("kept after screening", len(kept)),
               ("requested packages available", len(kept) - outs["not_on_pypi"]
                - outs["ingest_error"] - outs["root_unavailable"]),
               ("unsatisfiable on the snapshot", outs["reproduced"] + outs["missing_dependency"]),
-              ("reproduced (genuine conflict)", outs["reproduced"])]
+              ("reproduced", outs["reproduced"])]
     return "\n".join(lines), funnel, outs
 
 

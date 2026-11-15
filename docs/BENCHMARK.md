@@ -39,7 +39,8 @@ python -m pytest -q tests/benchmark                     # offline
 python -m crux.benchmark.planted --out benchmarks/planted/instances.jsonl
 python -m crux.benchmark.planted --verify benchmarks/planted/instances.jsonl
 
-# the comparison (needs a CPython 3.12 with pip==26.2.1, a pip==25.0.1, uv==0.11.32)
+# the comparison (needs a CPython 3.12 with pip==26.2.1, a pip==25.0.1, uv==0.11.32);
+# PY312_PIP26, PY312_PIP25 and UV stand for the paths to those executables
 python -m crux.benchmark.harness --instances benchmarks/planted/instances.jsonl \
     --out benchmarks/results/planted --pip-python PY312_PIP26 \
     --pip-baseline-python PY312_PIP25 --uv UV
@@ -85,9 +86,10 @@ optional harmless background packages.
 Background: none, small (6 to 10 packages) or large (25 to 40). Background
 packages form a dependency DAG with a known working version each, and
 gadget releases get extra dependencies on them, so the conflict is buried
-among constraints that do not matter. Background release edges average
-about 2 with a quarter of releases having none, roughly the pilot's 2.2 and
-25% (`docs/PILOT.md`); this is a rough shape match, not a fitted model.
+among constraints that do not matter. Background releases have 1.9 edges on
+average and 29% have none, against the pilot's 2.2 and 25% (17,300 edges and
+1,920 dependency-free releases out of 7,830, `docs/PILOT.md`); this is a rough
+shape match, not a fitted model.
 
 ### Why the planted core is the right answer, and the only one
 
@@ -157,7 +159,8 @@ date** (`Graph.load`'s `as_of` rule) and solved by Crux. Outcomes:
 A stricter test came later (section "Core extraction on the real
 conflicts"): switching off every edge that no snapshot release meets, not
 only edges into packages with no release. 45 of the 61 stay unsatisfiable;
-16 rest on a version the snapshot lacks, mostly a source-only release.
+16 rest on a version the snapshot lacks, mostly one with no wheel for
+CPython 3.12 on Linux x86-64.
 
 `same_packages` records whether a reproduced conflict involves a package pip
 named in the reporter's own conflict lines: a rough check that the replay is
@@ -187,7 +190,7 @@ include interpreter start-up. (3) Crux configurations C0 to C4 and
 C4-noLCV in-process, each on a fresh `Graph` (shared caches confound
 timings, `docs/context.md` 6.3), 10 s limit as in the team's ablation.
 
-**Message definitions** (`messages.py`, fixed before measuring):
+**Message definitions** (`messages.py`, fixed before the final runs):
 pip's message is everything from its first `ERROR:` line to the end of its
 output, with stdout and stderr merged in printed order (pip writes `ERROR:`
 to stderr but "The conflict is caused by:" to stdout); uv's is its stderr.
@@ -212,10 +215,10 @@ both were open when checked on 2026-11-14. We measure how often it appears in
 our benchmark; we did not discover it, and the report must say so.
 
 **Why two pip versions.** On identical wheels in an identical environment,
-pip 25.0.1 answered one planted instance in 0.4 s and pip 26.2.1 did not
-finish in 45 s: it backtracked through background packages unrelated to the
-conflict, printing "This is taking longer than usual". pip's behaviour on
-hard cases depends on its version, so both are reported.
+pip 26.2.1 ran out of time (60 s) on 29 planted instances, printing "This is
+taking longer than usual" in all 29, while pip 25.0.1 answered all 29 within
+the limit. pip's behaviour on hard cases depends on its version, so both are
+reported.
 
 ## Results
 
@@ -300,8 +303,8 @@ conflicts cuts that by about 10x, and beats QuickXplain on these instances.
 **61 conflicts reproduced** on the snapshot as of each report date (the
 proposal's target was 50). Of the 33 reproduced cases whose post includes
 pip's conflict lines, pip on our replayed data blames a package pip blamed
-for the user in **32**. The other 28 are genuine conflicts on real metadata
-but not shown to be the reporter's own.
+for the user in **32**. The other 28 are conflicts on our snapshot of real
+metadata but not shown to be the reporter's own.
 
 | | answered "no solution" within 60 s | median time | p95 time |
 |---|---|---|---|
@@ -320,11 +323,12 @@ All four tools agree on all 61. Messages: uv median 6 lines; pip 26.2.1
   timed out after 125,864 to 971,446 nodes; C1 answered with 0 search nodes.
   C2 to C4 add nothing measurable on top of AC-3 here.
 - **Crux's slow tail is setup, not search.** All 25 timeouts of C1 to C4 at
-  10 s happened at 0 search nodes, on the 5 largest graphs (27,757 to 65,127
-  versions; 93,773 to 280,204 edges). End to end these take 10.8 to 19.2 s
+  10 s happened at 0 search nodes, on 5 of the 6 largest graphs (27,757 to
+  65,127 versions; 93,773 to 280,204 edges; the 5th largest, 28,655 versions,
+  finished). End to end these take 10.8 to 19.2 s
   (median of 5 runs). Profiling one of them (`real/rajpurkarlab/CRIMSON#3`,
-  C4-noLCV, cProfile): 99.8% of the time is AC-3's setup and **92% is inside
-  `Graph.allowed()`** (98,053 calls), almost all of it in `packaging`'s
+  C4-noLCV, cProfile, two runs): 99.8% of the time is AC-3's setup and
+  **91 to 92% is inside `Graph.allowed()`** (98,053 calls), almost all of it in `packaging`'s
   specifier filtering, about 30% in `==` comparisons. This is the cold
   `Graph.allowed()` cost `docs/context.md` reports on the pilot, at a larger
   scale; the `==X` fast path proposed there targets part of it.
@@ -354,10 +358,11 @@ the call the CLI and the renderer make.
 - **A conflict among releases that exist, or a missing version.** 45 of 61
   stay unsatisfiable when every requirement that no snapshot release meets is
   switched off ("robust"); 16 rest on such a requirement. Looked up in the
-  corpus database's `drops` table, the versions those cores ask for were
-  mostly dropped as source-only (`no_wheel`, in 14 of the 18 cores that
-  contain such a requirement), some as yanked (4) or uploaded after the
-  report (4). pip and uv agree with Crux on all of them, but they may not be
+  corpus database's `drops` table (not committed: 1.3 GB), the versions
+  those cores ask for were mostly dropped for having no wheel for CPython
+  3.12 on Linux x86-64 (`no_wheel`, in 14 of the 18 cores that contain such
+  a requirement; for example `sqlalchemy==1.4.29` and `torch==1.10.1`, which
+  predate Python 3.12), some as yanked (4) or uploaded after the report (4). pip and uv agree with Crux on all of them, but they may not be
   the reporter's failure. On 2 robust instances the core returned uses such a
   requirement although a core among existing releases exists; for the
   renderer, extracting first with those requirements switched off would give
@@ -398,22 +403,23 @@ in 23 and share at least one in 32.
 ## Limitations
 
 - **The data is easier than real resolution** (from the data layer): extras
-  are dropped (over half of all Requires-Dist lines), sdist-only releases are
-  dropped, `requires_dist: null` is read as no dependencies, one wheel per
-  version. pip and uv are run on the same reduced data, so the comparison is
+  are dropped (over half of all Requires-Dist lines), releases with no wheel
+  for CPython 3.12 on Linux x86-64 are dropped (including source-only ones),
+  `requires_dist: null` is read as no dependencies, one wheel per version. pip and uv are run on the same reduced data, so the comparison is
   fair, but no claim here covers extras or source builds.
 - **Planted background is synthetic.** Its shape roughly matches the pilot's
   averages; it is not sampled from real graphs.
 - **Real cases come mostly from opening posts in other projects' issues**, not
   from pip's tracker as the proposal planned (section 3). Method A requests
   can be only part of what the user asked for.
-- **Timing** is on a shared 2-CPU cloud VM; a niced, network-bound data
-  download ran during part of the planted timing pass. Medians of 5
+- **Timing** is on a shared 2-CPU cloud VM; the real-failure corpus download
+  (network-bound) ran during part of the planted timing pass. Medians of 5
   sequential runs; solve rate is the primary speed measure, as the proposal
   says.
 - **Crux's message is not measured**: the renderer does not exist yet.
 - **16 of the 61 reproduced conflicts rest on a version the snapshot
-  lacks** (mostly source-only releases). pip and uv agree on them, but they
+  lacks** (mostly versions with no wheel for CPython 3.12 on Linux x86-64).
+  pip and uv agree on them, but they
   may not be the reporter's failure; 45 are conflicts among releases that
   exist.
 - **Core numbers are for `crux/explain/` as of `d438458`.** Any later change
