@@ -18,11 +18,13 @@ It measures, on identical metadata for every tool:
 - how close each Crux configuration's reported conflict is to the true
   minimal core.
 
-It does not measure Crux's *message*. The English renderer and core
-extraction (Parth Gupta, Yash) are not built yet. Crux is compared on
-answers, time and the size of the conflict it reports. `benchmarks/planted/`
-holds the ground truth that core extraction will be scored against
-(exact match on planted cores) once it exists.
+It also scores **core extraction** (Yash's `crux.explain`, pull request #2,
+not yet merged) against the planted cores: since each planted core is proven
+unique, an extracted core is correct only if it equals it exactly.
+
+It does not measure Crux's *message*: the English renderer (Parth Gupta) is
+not built yet. Crux is compared on answers, time and the conflict it
+reports.
 
 ## Quick start
 
@@ -38,8 +40,12 @@ python -m crux.benchmark.planted --verify benchmarks/planted/instances.jsonl
 python -m crux.benchmark.harness --instances benchmarks/planted/instances.jsonl \
     --out benchmarks/results/planted --pip-python PY312_PIP26 \
     --pip-baseline-python PY312_PIP25 --uv UV
+# core extraction against the planted cores (needs crux.explain, PR #2)
+python -m crux.benchmark.score_cores --instances benchmarks/planted/instances.jsonl \
+    --out benchmarks/results/cores --start universe
 python -m crux.benchmark.report --planted benchmarks/results/planted \
-    --real benchmarks/results/real --corpus benchmarks/corpus --out benchmarks/results
+    --real benchmarks/results/real --corpus benchmarks/corpus \
+    --cores benchmarks/results/cores --out benchmarks/results
 ```
 
 Real-failure corpus (network): `corpus_collect` (GitHub search),
@@ -254,6 +260,27 @@ concentrate in large noise (31/66). **C4's conflict is exactly the true
 minimal core on 85% of instances**, before any core extraction: a strong
 starting point for the explanation module.
 
+### Core extraction against the planted cores
+
+Yash's `crux.explain` at commit `d438458` (pull request #2, unmerged when
+run; scored on a local merge with this branch). **All three methods return
+exactly the planted core on 198 of 198 instances**, and claim minimality on
+all, with no solver timeouts.
+
+From `explain`'s default starting set (the solver's own conflict) that is
+easy: the starting conflict already equals the core on all 198, so
+extraction only confirms minimality. The real test starts from **every
+constraint of the instance** (median about 100, up to 815):
+
+| method | core = planted core | solver calls (median, max) | median time |
+|---|---|---|---|
+| deletion | 198/198 | 102, 816 | 0.14 s |
+| deletion+refine | 198/198 | **11, 23** | **0.01 s** |
+| QuickXplain | 198/198 | 35, 119 | 0.05 s |
+
+Deletion costs one call per constraint; refinement with the solver's own
+conflicts cuts that by about 10x, and beats QuickXplain on these instances.
+
 ### Real failures
 
 5,275 issues collected; 472 requests kept and verified against their posts;
@@ -295,8 +322,8 @@ All four tools agree on all 61. Messages: uv median 6 lines; pip 26.2.1
 |---|---|
 | Solve rate at least pip's | **Met**: planted 198/198 vs pip 26.2.1's 169/198 (pip 25.0.1: 198/198); real 61/61 each |
 | Time within 3x of pip's median *on satisfiable cases* | **Not measured here**: every benchmark instance is unsatisfiable. On these, Crux's median is below pip's (0.08 vs 0.34 s planted; 0.20 vs 0.41 s real), but its 95th percentile on real conflicts is about 10x pip's |
-| Core minimality 100%, exact match on 95% of planted | **Waiting for core extraction** (not built). Ground truth is ready; C4's raw conflict already equals it on 85% |
-| Jaccard >= 0.8 on real cores | **Not possible yet**: needs core extraction and hand-annotated cores |
+| Core minimality 100%, exact match on 95% of planted | **Met, on the unmerged PR #2**: 198/198 exact for deletion, deletion+refine and QuickXplain, starting from every constraint. Re-run `score_cores` once it is merged |
+| Jaccard >= 0.8 on real cores | **Not possible yet**: needs hand-annotated cores for the real cases |
 | Message size at most half of pip's | **Crux's message is not built.** Baselines measured: uv's median is 6 lines and pip 26.2.1's 10 on real conflicts |
 | User study | **Not run.** `messages.jsonl` holds every pip and uv message for it |
 
@@ -319,3 +346,17 @@ All four tools agree on all 61. Messages: uv median 6 lines; pip 26.2.1
   sequential runs; solve rate is the primary speed measure, as the proposal
   says.
 - **Crux's message is not measured**: the renderer does not exist yet.
+- **Core extraction was scored before it was merged** (PR #2 at `d438458`).
+  Re-run `score_cores` after merging; any later change to `crux/explain/`
+  makes these numbers stale.
+
+## Merging this branch alongside pull request #2
+
+Both branches edit `pyproject.toml` and `docs/context.md`, so whichever merges
+second has a conflict. Both are "keep both" conflicts. In `pyproject.toml`
+the packages line becomes
+`["crux", "crux.data", "crux.resolver", "crux.explain", "crux.benchmark"]`.
+In `docs/context.md` keep both teams' rows in section 7, both members' lines
+in section 8 (Yash's line from PR #2, Arrya's from this branch) and both
+change-log entries in section 10. A test merge resolved this way passes all
+tests.

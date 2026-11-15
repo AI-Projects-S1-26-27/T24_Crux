@@ -68,6 +68,28 @@ Timeouts by noise level:
 | small | 6/66 | 6/66 | 0/66 | 0/66 | 0/66 | 0/66 |
 | large | 31/66 | 26/66 | 1/66 | 1/66 | 0/66 | 0/66 |
 
+### Core extraction against the planted cores
+
+Core extraction is `crux.explain` (Yash Kejriwal), commit `d438458` (pull request #2, not merged when this ran). Each planted core is the unique minimal core, so an extracted core is correct only if it equals the planted one.
+
+Starting from the solver's own conflict (explain's default):
+
+| method | core = planted core | claims minimal | start size (median) | solver calls (median) | seconds (median) | solver timeouts |
+|---|---|---|---|---|---|---|
+| deletion | 198/198 (100%) | 198 | 8.00 | 8 (max 20) | 0.01 | 0 |
+| deletion+refine | 198/198 (100%) | 198 | 8.00 | 8 (max 20) | 0.01 | 0 |
+| quickxplain | 198/198 (100%) | 198 | 8.00 | 14 (max 38) | 0.01 | 0 |
+
+Here the starting conflict already equals the planted core on 198 of 198 instances, so extraction only confirms minimality. Starting from every constraint tests the reduction itself:
+
+Starting from every constraint of the instance:
+
+| method | core = planted core | claims minimal | start size (median) | solver calls (median) | seconds (median) | solver timeouts |
+|---|---|---|---|---|---|---|
+| deletion | 198/198 (100%) | 198 | 100.50 | 102 (max 816) | 0.14 | 0 |
+| deletion+refine | 198/198 (100%) | 198 | 100.50 | 11 (max 23) | 0.01 | 0 |
+| quickxplain | 198/198 (100%) | 198 | 100.50 | 35 (max 119) | 0.05 | 0 |
+
 ## Real failures
 
 Issues collected: **5275** (pip's tracker 131, uv's tracker 582, other projects quoting pip's error 1965, other projects quoting uv's error 2597).

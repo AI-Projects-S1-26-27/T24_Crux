@@ -206,6 +206,43 @@ def timeout_notes(crux) -> str:
     return " ".join(lines)
 
 
+def cores_section(cores: Path) -> str:
+    env = json.loads((cores / "env_universe.json").read_text())
+    out = [f"Core extraction is `crux.explain` (Yash Kejriwal), commit "
+           f"`{env['explain_last_commit'][:7]}` (pull request #2, not merged when "
+           "this ran). Each planted core is the unique minimal core, so an "
+           "extracted core is correct only if it equals the planted one.", ""]
+    for start, label in (("solver", "the solver's own conflict (explain's default)"),
+                         ("universe", "every constraint of the instance")):
+        f = cores / f"cores_{start}.csv"
+        if not f.exists():
+            continue
+        rows = _rows(f)
+        table = []
+        for m in ("deletion", "deletion+refine", "quickxplain"):
+            rs = [r for r in rows if r["method"] == m]
+            if not rs:
+                continue
+            calls = [int(r["calls"]) for r in rs]
+            table.append([m, _pct(sum(r["exact"] == "True" for r in rs), len(rs)),
+                          sum(r["claimed_minimal"] == "True" for r in rs),
+                          _med(float(r["start_size"]) for r in rs),
+                          f"{statistics.median(calls):.0f} (max {max(calls)})",
+                          _med(_f(r["wall_s"]) for r in rs),
+                          sum(int(r["timeouts"]) for r in rs)])
+        same = sum(r["start_size"] == r["core_size"] for r in rows if r["method"] == "deletion")
+        out += [f"Starting from {label}:", "",
+                _table(["method", "core = planted core", "claims minimal",
+                        "start size (median)", "solver calls (median)",
+                        "seconds (median)", "solver timeouts"], table), ""]
+        if start == "solver":
+            out += [f"Here the starting conflict already equals the planted core on "
+                    f"{same} of {sum(1 for r in rows if r['method'] == 'deletion')} "
+                    "instances, so extraction only confirms minimality. Starting from "
+                    "every constraint tests the reduction itself:", ""]
+    return "\n".join(out).rstrip()
+
+
 def crux_noise_table(crux):
     rows = []
     for noise in ("none", "small", "large"):
@@ -383,6 +420,7 @@ def main(argv=None) -> int:
     ap.add_argument("--planted", required=True)
     ap.add_argument("--real")
     ap.add_argument("--corpus")
+    ap.add_argument("--cores", help="core-extraction scores (score_cores output)")
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     out = Path(a.out)
@@ -436,6 +474,9 @@ def main(argv=None) -> int:
         "",
         crux_noise_table(pc),
     ]
+    if a.cores and Path(a.cores, "env_universe.json").exists():
+        md += ["", "### Core extraction against the planted cores", "",
+               cores_section(Path(a.cores))]
     funnel = None
     ro = None
     if a.real and Path(a.real, "outcomes.csv").exists():
