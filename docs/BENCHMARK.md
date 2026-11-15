@@ -18,9 +18,12 @@ It measures, on identical metadata for every tool:
 - how close each Crux configuration's reported conflict is to the true
   minimal core.
 
-It also scores **core extraction** (Yash's `crux.explain`, pull request #2,
-not yet merged) against the planted cores: since each planted core is proven
-unique, an extracted core is correct only if it equals it exactly.
+It also scores **core extraction** (Yash's `crux.explain`, merged into
+`main` in `1809edf`) against the planted cores: since each planted core is
+proven unique, an extracted core is correct only if it equals it exactly. On
+the real conflicts, where no answer is known, it checks the extracted cores
+with the independent verifier and proves whether each is the only minimal
+core.
 
 It does not measure Crux's *message*: the English renderer (Parth Gupta) is
 not built yet. Crux is compared on answers, time and the conflict it
@@ -40,9 +43,12 @@ python -m crux.benchmark.planted --verify benchmarks/planted/instances.jsonl
 python -m crux.benchmark.harness --instances benchmarks/planted/instances.jsonl \
     --out benchmarks/results/planted --pip-python PY312_PIP26 \
     --pip-baseline-python PY312_PIP25 --uv UV
-# core extraction against the planted cores (needs crux.explain, PR #2)
+# core extraction against the planted cores (--start solver and --start universe)
 python -m crux.benchmark.score_cores --instances benchmarks/planted/instances.jsonl \
     --out benchmarks/results/cores --start universe
+# core extraction on the real conflicts (--db, optional: the corpus database)
+python -m crux.benchmark.real_cores --instances benchmarks/corpus/instances.jsonl.gz \
+    --messages benchmarks/results/real/messages.jsonl --out benchmarks/results/cores
 python -m crux.benchmark.report --planted benchmarks/results/planted \
     --real benchmarks/results/real --corpus benchmarks/corpus \
     --cores benchmarks/results/cores --out benchmarks/results
@@ -146,7 +152,12 @@ date** (`Graph.load`'s `as_of` rule) and solved by Crux. Outcomes:
 | `not_reproduced` | a plan exists on this data |
 | `timeout` | Crux did not finish |
 | `missing_dependency` | unsatisfiable only because some dependency has no usable release (switching off edges into release-less packages gives a plan): a data-layer artefact, not counted |
-| `reproduced` | still unsatisfiable with those edges off: a genuine conflict among the requested packages on real metadata |
+| `reproduced` | still unsatisfiable with those edges off: a conflict among the requested packages on real metadata |
+
+A stricter test came later (section "Core extraction on the real
+conflicts"): switching off every edge that no snapshot release meets, not
+only edges into packages with no release. 45 of the 61 stay unsatisfiable;
+16 rest on a version the snapshot lacks, mostly a source-only release.
 
 `same_packages` records whether a reproduced conflict involves a package pip
 named in the reporter's own conflict lines: a rough check that the replay is
@@ -262,8 +273,10 @@ starting point for the explanation module.
 
 ### Core extraction against the planted cores
 
-Yash's `crux.explain` at commit `d438458` (pull request #2, unmerged when
-run; scored on a local merge with this branch). **All three methods return
+Yash's `crux.explain` (merged into `main` in `1809edf`; `crux/explain/` last
+changed in `d438458`). First scored on a local merge before pull request #2
+was merged, then re-run on the merged code: identical cores and calls, only
+timings differ. **All three methods return
 exactly the planted core on 198 of 198 instances**, and claim minimality on
 all, with no solver timeouts.
 
@@ -274,9 +287,9 @@ constraint of the instance** (median about 100, up to 815):
 
 | method | core = planted core | solver calls (median, max) | median time |
 |---|---|---|---|
-| deletion | 198/198 | 102, 816 | 0.14 s |
+| deletion | 198/198 | 102, 816 | 0.19 s |
 | deletion+refine | 198/198 | **11, 23** | **0.01 s** |
-| QuickXplain | 198/198 | 35, 119 | 0.05 s |
+| QuickXplain | 198/198 | 35, 119 | 0.07 s |
 
 Deletion costs one call per constraint; refinement with the solver's own
 conflicts cuts that by about 10x, and beats QuickXplain on these instances.
@@ -316,16 +329,69 @@ All four tools agree on all 61. Messages: uv median 6 lines; pip 26.2.1
   `Graph.allowed()` cost `docs/context.md` reports on the pilot, at a larger
   scale; the `==X` fast path proposed there targets part of it.
 
+### Core extraction on the real conflicts (`real_cores.py`)
+
+A real failure has no planted answer, so `real_cores.py` checks what can be
+proven instead. Extraction is `explain`, from the solver's own conflict:
+the call the CLI and the renderer make.
+
+- **Correct and minimal.** All three methods return a core on all 61, the
+  same core on 61 of 61, and claim minimality on all. Yash's independent
+  verifier confirms each core is unsatisfiable and minimal on **61 of 61**
+  (60 by exhaustive search, 1 by two different solvers agreeing). It is
+  cheap: a median of 3 or 4 solver calls and about 0.1 s; the largest core (85
+  constraints, `khoj-ai/khoj#1224`) takes 85 calls with deletion.
+- **The only explanation, or one of several.** K is the only minimal core of
+  instance I if and only if I without any single member of K has a plan (the
+  argument of section 2); every such plan is checked by `check_plan`.
+  **36 of the 61 cores are proven the only minimal core.** For these, any
+  correct hand annotation of the minimal conflict has to equal the extracted
+  core. On the other 25 another minimal core exists and the extractor returns
+  one of them. This happens when a release is ruled out for more than one
+  reason: in `swimlane/pyattck#154`, pyattck 6.0.0 fails both
+  through its `attrs==21.4.0` (the user asked for `attrs>=22`) and through
+  its `fire==0.3.1`, which has no release in the snapshot.
+- **A conflict among releases that exist, or a missing version.** 45 of 61
+  stay unsatisfiable when every requirement that no snapshot release meets is
+  switched off ("robust"); 16 rest on such a requirement. Looked up in the
+  corpus database's `drops` table, the versions those cores ask for were
+  mostly dropped as source-only (`no_wheel`, in 14 of the 18 cores that
+  contain such a requirement), some as yanked (4) or uploaded after the
+  report (4). pip and uv agree with Crux on all of them, but they may not be
+  the reporter's failure. On 2 robust instances the core returned uses such a
+  requirement although a core among existing releases exists; for the
+  renderer, extracting first with those requirements switched off would give
+  the more useful explanation.
+- **Real cores are small.** Robust cores have a median of 3 constraints (3
+  statements when grouped by package and dependency) and 1 to 3 packages.
+  **31 instances are both robust and unique**: the cleanest real test set
+  (`real_cores.jsonl`, `unique == "unique"` and `robust`).
+
+**What pip's and uv's messages name.** Scored against the 36 unique cores,
+pip 26.2.1, pip 25.0.1 and uv all name every package of the core (36 of 36;
+median precision 1.00), also on the 21 whose request came from the install
+command rather than from pip's own message. Real reported conflicts are
+shallow, and on shallow conflicts pip leaves nothing out; the gap measured on
+planted conflicts grows with depth (pip 26.2.1 names 0.87 of the conflict at
+depth 2 and 0.41 at depth 6), and the real corpus has almost no deep
+conflicts. On real data the differences that remain are message length (uv 6
+lines, pip 26.2.1 10) and pip 26.2.1's false "no matching distributions"
+line (50 of 61).
+
+Against the reporter's own pip output (33 cases quoting pip's conflict
+lines), the core's packages are exactly the packages pip blamed for the user
+in 23 and share at least one in 32.
+
 ### Against the proposal's targets
 
 | target | status |
 |---|---|
 | Solve rate at least pip's | **Met**: planted 198/198 vs pip 26.2.1's 169/198 (pip 25.0.1: 198/198); real 61/61 each |
 | Time within 3x of pip's median *on satisfiable cases* | **Not measured here**: every benchmark instance is unsatisfiable. On these, Crux's median is below pip's (0.08 vs 0.34 s planted; 0.20 vs 0.41 s real), but its 95th percentile on real conflicts is about 10x pip's |
-| Core minimality 100%, exact match on 95% of planted | **Met, on the unmerged PR #2**: 198/198 exact for deletion, deletion+refine and QuickXplain, starting from every constraint. Re-run `score_cores` once it is merged |
-| Jaccard >= 0.8 on real cores | **Not possible yet**: needs hand-annotated cores for the real cases |
+| Core minimality 100%, exact match on 95% of planted | **Met**: planted 198/198 exact for deletion, deletion+refine and QuickXplain, also starting from every constraint; real 61/61 confirmed minimal by the independent verifier |
+| Jaccard >= 0.8 on real cores | **Not measured as specified** (no hand annotation). Instead: 36 of 61 real cores are proven the only minimal core, so a correct annotation must equal them; on the other 25 the extractor returns one of several valid cores |
 | Message size at most half of pip's | **Crux's message is not built.** Baselines measured: uv's median is 6 lines and pip 26.2.1's 10 on real conflicts |
-| User study | **Not run.** `messages.jsonl` holds every pip and uv message for it |
+| User study | **Not run.** `messages.jsonl` holds every pip and uv message for it, `benchmarks/results/cores/real_cores.jsonl` every real core |
 
 
 
@@ -346,17 +412,9 @@ All four tools agree on all 61. Messages: uv median 6 lines; pip 26.2.1
   sequential runs; solve rate is the primary speed measure, as the proposal
   says.
 - **Crux's message is not measured**: the renderer does not exist yet.
-- **Core extraction was scored before it was merged** (PR #2 at `d438458`).
-  Re-run `score_cores` after merging; any later change to `crux/explain/`
-  makes these numbers stale.
-
-## Merging this branch alongside pull request #2
-
-Both branches edit `pyproject.toml` and `docs/context.md`, so whichever merges
-second has a conflict. Both are "keep both" conflicts. In `pyproject.toml`
-the packages line becomes
-`["crux", "crux.data", "crux.resolver", "crux.explain", "crux.benchmark"]`.
-In `docs/context.md` keep both teams' rows in section 7, both members' lines
-in section 8 (Yash's line from PR #2, Arrya's from this branch) and both
-change-log entries in section 10. A test merge resolved this way passes all
-tests.
+- **16 of the 61 reproduced conflicts rest on a version the snapshot
+  lacks** (mostly source-only releases). pip and uv agree on them, but they
+  may not be the reporter's failure; 45 are conflicts among releases that
+  exist.
+- **Core numbers are for `crux/explain/` as of `d438458`.** Any later change
+  there makes them stale: re-run `score_cores` and `real_cores`.

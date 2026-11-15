@@ -225,6 +225,9 @@ Owner: Arrya Sridhar. Method in `docs/BENCHMARK.md`, every number in
   replayed on the snapshot as of each report date: 61 reproduced conflicts.
 - `python -m crux.benchmark.harness`: pip, uv and Crux on identical metadata
   (instances written as metadata-only wheels, read with `--no-index`).
+- `python -m crux.benchmark.score_cores` / `real_cores`: core extraction
+  (`crux.explain`) scored against the planted cores, and checked on the real
+  conflicts (`benchmarks/results/cores/`).
 
 ## Running tests
 

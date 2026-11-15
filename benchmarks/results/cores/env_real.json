@@ -1,0 +1,21 @@
+{
+  "finished": "2026-11-15T13:12:39+0000",
+  "git_head": "64b3b0541824ced0e5aa4e78b2f7547b3bffb8f7",
+  "explain_last_commit": "d438458dda182b6fb29b99dcdb2041b038790ccd YashKejriwal1907 Add minimal unsatisfiable core extraction and minimality verifier",
+  "machine": {
+    "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+    "python": "3.12.13"
+  },
+  "methods": [
+    "deletion",
+    "deletion+refine",
+    "quickxplain"
+  ],
+  "primary": "quickxplain",
+  "budget_s": 120.0,
+  "drop_reasons_from_db": true,
+  "verify_timeout_s": 30.0,
+  "unique_timeout_s": 60.0,
+  "instances": 61,
+  "seconds": 454.8
+}
