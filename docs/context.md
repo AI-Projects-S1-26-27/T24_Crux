@@ -636,8 +636,9 @@ harness and the real corpus).
 - Parth Gupta: the English renderer over `crux.explain.explain(problem).core`, the user study.
 - Arrya: done (docs/BENCHMARK.md): 198 planted instances with proven unique cores
   (`benchmarks/planted/`), 61 reproduced real conflicts (`benchmarks/corpus/`), the pip/uv/Crux
-  harness and its results. Open: score core extraction against the planted cores once it
-  exists; Crux's message once the renderer exists; the user study can draw on
+  harness and its results. Core extraction (PR #2 at `d438458`) scored against the planted
+  cores: exact on 198/198 for all three methods; re-run `score_cores` after merging. Open:
+  Crux's message once the renderer exists; the user study can draw on
   `benchmarks/results/*/messages.jsonl`.
 - Ritika and Sumehra: a `==X` fast path in `Graph.allowed()` (about 4.6 s cold on `boto3`);
   the full 5,000-seed run (about 6.5 h) after deciding the JSON-fallback question (old wheels

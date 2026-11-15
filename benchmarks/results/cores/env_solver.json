@@ -1,0 +1,19 @@
+{
+  "finished": "2026-11-15T00:20:19+0000",
+  "git_head": "5ecb770630b424a1ea13bc1d35406f47b0225aaf",
+  "explain_last_commit": "d438458dda182b6fb29b99dcdb2041b038790ccd YashKejriwal1907 Add minimal unsatisfiable core extraction and minimality verifier",
+  "machine": {
+    "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+    "python": "3.12.13"
+  },
+  "methods": [
+    "deletion",
+    "deletion+refine",
+    "quickxplain"
+  ],
+  "start": "solver",
+  "budget_s": 60.0,
+  "instances": 198,
+  "seconds": 3.4,
+  "git_head_note": "git_head is a local, unpushed merge of arrya/benchmarking with origin/yash/core-extraction (PR #2), made because core extraction is not on main yet; the extractor scored is crux.explain at explain_last_commit."
+}
