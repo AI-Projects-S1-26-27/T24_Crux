@@ -70,7 +70,7 @@ Timeouts by noise level:
 
 ### Core extraction against the planted cores
 
-Core extraction is `crux.explain` (Yash Kejriwal), commit `d438458` (pull request #2, not merged when this ran). Each planted core is the unique minimal core, so an extracted core is correct only if it equals the planted one.
+Core extraction is `crux.explain` (Yash Kejriwal), last changed in commit `d438458`. Each planted core is the unique minimal core, so an extracted core is correct only if it equals the planted one.
 
 Starting from the solver's own conflict (explain's default):
 
@@ -80,15 +80,15 @@ Starting from the solver's own conflict (explain's default):
 | deletion+refine | 198/198 (100%) | 198 | 8.00 | 8 (max 20) | 0.01 | 0 |
 | quickxplain | 198/198 (100%) | 198 | 8.00 | 14 (max 38) | 0.01 | 0 |
 
-Here the starting conflict already equals the planted core on 198 of 198 instances, so extraction only confirms minimality. Starting from every constraint tests the reduction itself:
+Here the starting conflict already equals the planted core on 198 of 198 instances, so extraction only confirms minimality. Starting from every constraint tests the reduction itself.
 
 Starting from every constraint of the instance:
 
 | method | core = planted core | claims minimal | start size (median) | solver calls (median) | seconds (median) | solver timeouts |
 |---|---|---|---|---|---|---|
-| deletion | 198/198 (100%) | 198 | 100.50 | 102 (max 816) | 0.14 | 0 |
+| deletion | 198/198 (100%) | 198 | 100.50 | 102 (max 816) | 0.19 | 0 |
 | deletion+refine | 198/198 (100%) | 198 | 100.50 | 11 (max 23) | 0.01 | 0 |
-| quickxplain | 198/198 (100%) | 198 | 100.50 | 35 (max 119) | 0.05 | 0 |
+| quickxplain | 198/198 (100%) | 198 | 100.50 | 35 (max 119) | 0.07 | 0 |
 
 ## Real failures
 
@@ -163,6 +163,42 @@ Crux configurations:
 | C4-noLCV | 56/61 (92%) | 5 | 0 | 0.00 | – | – | – |
 
 On **5** instances C0 timed out after 125,864 to 971,446 nodes while C1 (AC-3) answered with 0 search nodes. Timeouts in C1 to C4: 25, of which **25 at 0 search nodes**, i.e. before search began (AC-3 and domain setup on the largest graphs), on 5 instances.
+
+### Core extraction on the real conflicts
+
+`crux.explain` (last changed in `d438458`) on the 61 reproduced real conflicts, from the solver's own conflict (`explain`, the call the CLI and renderer make). There is no planted answer here, so the checks are: the independent verifier, and whether the core is the only minimal core (it is if removing any one of its members from the whole instance leaves a plan, each plan checked independently).
+
+| method | claims minimal | core size (median) | solver calls (median) | seconds (median) | solver timeouts |
+|---|---|---|---|---|---|
+| deletion | 61 | 3 (max 85) | 3 (max 85) | 0.10 (max 34.9) | 0 |
+| deletion+refine | 61 | 3 (max 85) | 3 (max 85) | 0.09 (max 5.9) | 0 |
+| quickxplain | 61 | 3 (max 85) | 4 (max 168) | 0.09 (max 52.5) | 0 |
+
+The three methods return the same core on 61 of 61. The verifier confirms the quickxplain core is unsatisfiable and minimal on 61 of 61 (unsatisfiable by oracle 60, solvers 1; 'oracle' is exhaustive search, 'solvers' is two different solvers agreeing).
+
+Kind of conflict ('robust': still unsatisfiable when every requirement that no release in the snapshot meets is ignored, so the conflict is among releases that exist; otherwise it rests on a version the snapshot lacks):
+
+|  | robust | rests on a missing version | total |
+|---|---|---|---|
+| only minimal core | 31 | 5 | 36 |
+| another minimal core exists | 14 | 11 | 25 |
+
+Robust cores are small: median 3 constraints and 3 statements grouped by (package, dependency); packages per core: 1: 14, 2: 24, 3: 7.
+On 2 robust instances the core shown still uses a requirement no release meets, although a core among existing releases exists.
+
+Why the missing versions are missing (18 cores with such a member; one core can have several reasons): `no_wheel` 14, `yanked` 4, `released_after_report` 4, `after_cutoff` 1, `py_version` 1, `no_version_found` 1 (`no_wheel`: source-only release, outside the snapshot's scope).
+
+What pip's and uv's messages name, scored against the cores that are the only minimal core (as for planted cores):
+
+| tool | messages | core recall (median) | names whole core | precision (median) | lines (median) |
+|---|---|---|---|---|---|
+| pip | 36 | 1.00 | 36 | 1.00 | 10 |
+| pip-baseline | 36 | 1.00 | 36 | 1.00 | 8 |
+| uv | 36 | 1.00 | 36 | 1.00 | 6 |
+
+Only requests taken from the install command (screening method B, so the request is not built from pip's own message): pip names the whole core in 21 of 21; pip-baseline names the whole core in 21 of 21; uv names the whole core in 21 of 21.
+
+Against the reporter's own pip output (33 cases quoting pip's conflict lines): the core's packages are exactly the packages pip blamed in 23, and share at least one in 32.
 
 ## Figures
 
