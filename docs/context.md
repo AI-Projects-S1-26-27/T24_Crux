@@ -46,6 +46,9 @@ and nothing is committed yet (see section 3).
   2.34.2 with four dependencies), so C3/C4 are not the configurations to use for
   real resolution. `C4-noLCV` (AC-3 + MRV + learning) keeps newest-first plans.
 
+**Core extraction** (Yash, 2026-11-15) is in `crux/explain/` and documented in
+`docs/EXPLAIN.md`.
+
 **Open (details in section 8).**
 1. Nothing from this work is committed or pushed.
 2. The final report is not written yet (section 3).
@@ -415,6 +418,13 @@ every package involved. On `thrash_wide` it is **exactly 8 constraints at any si
 in 64, never larger. If AC-3 deleted a version the refutation relied on, all of AC-3's
 `used` constraints are added (coarse but sound). This is the input for core extraction.
 
+*Clarification (Yash, 2026-11-15, `docs/EXPLAIN.md` 4.4):* the "2.0 (C4)" figure is for
+**learning alone** (`Config(learning=True)`, as in `test_learning.py`), not the C4 preset.
+With AC-3 on, the AC-3 rule above applies often: on the 215 UNSAT instances among
+`random_problem` seeds 0 to 299 the C4 preset's conflict has mean 10.3 constraints (C0 5.6,
+learning + MRV without AC-3 1.86, true minimal core 1.79). Core extraction therefore starts
+from learning without AC-3.
+
 **Mutation check.** Jumping to the earliest decision (20 wrong), forgetting the activating
 decision (12 wrong, 12 unsound), not passing the conflict to the target (2 wrong, 6
 unsound), an over-general nogood (1 wrong, 3 unsound) and dropping the activation chain
@@ -586,7 +596,8 @@ real conflict**.
 | 4 | Ablation with tables and figures (Parth) | done; 10x target met except `random_csp` size 12 |
 | 4 | Real-data benchmark on the pilot | done; fixed the LCV cost; re-run with per-configuration plans and `C4-noLCV`; LCV picks old releases |
 | 4 | Independent review | done; 2 code bugs and 3 tooling flaws fixed, documentation corrected |
-| 4 | Hand the solver to Yash and Arrya | next: C4's `Result.conflict` is the input for core extraction |
+| 4 | Hand the solver to Yash and Arrya | done for Yash: core extraction uses `solve` as its oracle |
+| 4 | Core extraction (deletion, deletion+refine, QuickXplain) and minimality verifier (Yash) | done; `crux/explain/`, `docs/EXPLAIN.md` |
 | 4 | Commit and push; final report; viva preparation | **not done** (section 3) |
 
 Targets from the proposal (they can fail; report if missed): 100% SAT/UNSAT agreement with
@@ -615,8 +626,11 @@ harness and the real corpus).
   releases gives UNSAT without AC-3 and TIMEOUT with it). The contract allows this.
 
 **Other teams**
-- Yash and Parth Gupta: core extraction (deletion and QuickXplain over `Problem.constraints()`
-  using `solve` as the oracle), the English renderer, the user study.
+- Yash: core extraction and the verifier are **done** (`crux/explain/`, `docs/EXPLAIN.md`).
+  Two findings for the resolver team in `docs/EXPLAIN.md` section 9: the C4 preset's conflict
+  is inflated by AC-3's justifications, and `learning.py` `_explain` costs about 8 s per
+  solve on the real boto3/botocore conflict when AC-3 is off (98% of the time in a profile).
+- Parth Gupta: the English renderer over `crux.explain.explain(problem).core`, the user study.
 - Arrya: the hard-case corpus (at least 50 real pip-issue failures), the planted-conflict
   generator, the pip/uv harness.
 - Ritika and Sumehra: a `==X` fast path in `Graph.allowed()` (about 4.6 s cold on `boto3`);
@@ -698,3 +712,6 @@ All entries are 2026-11-14 unless stated.
   deadline while building its closure (it overran 10 s to 18.5 s on real data), with a
   regression test. Re-ran the real-data benchmark (168 runs) and regenerated the ablation
   report from its saved rows.
+- **2026-11-15 (Yash).** Core extraction and the minimality verifier in `crux/explain/`, with
+  `tests/explain/` and `docs/EXPLAIN.md`; `crux.explain` added to `pyproject.toml`. Clarified
+  the conflict-size figure in 5.7 and updated sections 0, 7 and 8. No resolver code changed.
