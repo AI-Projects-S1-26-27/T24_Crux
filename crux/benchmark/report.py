@@ -179,6 +179,33 @@ def crux_table(crux):
                    "conflict IS the planted core", "conflict size / core size (median)"], rows)
 
 
+def timeout_notes(crux) -> str:
+    """Where the configuration timeouts come from: search, or setup."""
+    by = collections.defaultdict(dict)
+    for r in crux:
+        by[r["instance"]][r["config"]] = r
+    rescued = [i for i, c in by.items() if c.get("C0", {}).get("status") == "TIMEOUT"
+               and c.get("C1", {}).get("status") == "UNSAT"]
+    c0_nodes = [int(by[i]["C0"]["nodes"]) for i in rescued]
+    c1_nodes = [int(by[i]["C1"]["nodes"]) for i in rescued]
+    later = [r for r in crux if r["config"] != "C0" and r["status"] == "TIMEOUT"]
+    at_zero = sum(int(r["nodes"]) == 0 for r in later)
+    lines = []
+    if rescued:
+        span = (f"{min(c1_nodes)}" if min(c1_nodes) == max(c1_nodes)
+                else f"{min(c1_nodes)} to {max(c1_nodes)}")
+        lines.append(
+            f"On **{len(rescued)}** instances C0 timed out after "
+            f"{min(c0_nodes):,} to {max(c0_nodes):,} nodes while C1 (AC-3) "
+            f"answered with {span} search nodes.")
+    if later:
+        lines.append(
+            f"Timeouts in C1 to C4: {len(later)}, of which **{at_zero} at 0 search "
+            "nodes**, i.e. before search began (AC-3 and domain setup on the "
+            f"largest graphs), on {len({r['instance'] for r in later})} instances.")
+    return " ".join(lines)
+
+
 def crux_noise_table(crux):
     rows = []
     for noise in ("none", "small", "large"):
@@ -423,7 +450,7 @@ def main(argv=None) -> int:
                outcome_table(ro, names, expected=None, timeout=env["timeout_s"]), "",
                "Time:", "", timing_table(rt, names), "",
                "Messages:", "", message_table(ro, names, with_core=False), "",
-               "Crux configurations:", "", crux_table(rc)]
+               "Crux configurations:", "", crux_table(rc), "", timeout_notes(rc)]
     made = figures(out, po, deep, pc, names, funnel)
     if made:
         md += ["", "## Figures", ""] + [f"![{m}]({m})" for m in made]
