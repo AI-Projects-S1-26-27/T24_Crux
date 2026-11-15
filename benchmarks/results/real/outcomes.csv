@@ -1,0 +1,245 @@
+instance,tool,status,exit_code,kind,depth,noise,core_size,msg_lines,out_lines,named,named_list,names_root,statements,distinct_statements,unavailable_claimed,false_unavailable,original_overlap
+real/AMAAI-Lab/Music2Emotion#1,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/AMAAI-Lab/Music2Emotion#1,pip,UNSAT,1,real,,,,10,12,1,pyyaml,True,2,2,1,1,True
+real/AMAAI-Lab/Music2Emotion#1,pip-baseline,UNSAT,1,real,,,,8,10,1,pyyaml,True,2,2,0,0,True
+real/AMAAI-Lab/Music2Emotion#1,uv,UNSAT,1,real,,,,3,3,1,pyyaml,True,1,1,,,True
+real/AgileRL/AgileRL#234,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/AgileRL/AgileRL#234,pip,UNSAT,1,real,,,,46,88,4,agilerl fastrand pip supersuit,True,37,37,2,1,True
+real/AgileRL/AgileRL#234,pip-baseline,UNSAT,1,real,,,,43,85,4,agilerl fastrand pip supersuit,True,37,37,0,0,True
+real/AgileRL/AgileRL#234,uv,UNSAT,1,real,,,,6,6,2,agilerl fastrand,True,2,2,,,True
+real/CERT-Polska/drakvuf-sandbox#1127,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/CERT-Polska/drakvuf-sandbox#1127,pip,UNSAT,1,real,,,,2,21,2,drakvuf-sandbox perception,True,0,0,0,0,False
+real/CERT-Polska/drakvuf-sandbox#1127,pip-baseline,UNSAT,1,real,,,,2,21,2,drakvuf-sandbox perception,True,0,0,0,0,False
+real/CERT-Polska/drakvuf-sandbox#1127,uv,UNSAT,1,real,,,,6,6,2,drakvuf-sandbox perception,True,2,2,,,False
+real/ClipFarmVB/ClipFarm#442,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/ClipFarmVB/ClipFarm#442,pip,UNSAT,1,real,,,,10,23,3,inference numpy pip,True,2,2,1,1,
+real/ClipFarmVB/ClipFarm#442,pip-baseline,UNSAT,1,real,,,,8,21,3,inference numpy pip,True,2,2,0,0,
+real/ClipFarmVB/ClipFarm#442,uv,UNSAT,1,real,,,,5,5,2,inference numpy,True,4,4,,,
+real/Comfy-Org/ComfyUI#8069,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/Comfy-Org/ComfyUI#8069,pip,UNSAT,1,real,,,,12,15,1,huggingface-hub,True,4,4,1,1,True
+real/Comfy-Org/ComfyUI#8069,pip-baseline,UNSAT,1,real,,,,10,13,1,huggingface-hub,True,4,4,0,0,True
+real/Comfy-Org/ComfyUI#8069,uv,UNSAT,1,real,,,,3,3,1,huggingface-hub,True,1,1,,,True
+real/DrozmotiX/ioBroker.esphome#220,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/DrozmotiX/ioBroker.esphome#220,pip,UNSAT,1,real,,,,2,9,2,esphome paho-mqtt,True,0,0,0,0,
+real/DrozmotiX/ioBroker.esphome#220,pip-baseline,UNSAT,1,real,,,,2,9,2,esphome paho-mqtt,True,0,0,0,0,
+real/DrozmotiX/ioBroker.esphome#220,uv,UNSAT,1,real,,,,5,5,2,esphome pillow,True,4,4,,,
+real/EdisonScientific/edison-client-docs#30,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/EdisonScientific/edison-client-docs#30,pip,UNSAT,1,real,,,,10,22,3,futurehouse-client openai pip,True,2,2,1,1,
+real/EdisonScientific/edison-client-docs#30,pip-baseline,UNSAT,1,real,,,,8,20,3,futurehouse-client openai pip,True,2,2,0,0,
+real/EdisonScientific/edison-client-docs#30,uv,UNSAT,1,real,,,,6,6,2,futurehouse-client openai,True,4,4,,,
+real/Genesis-Embodied-AI/genesis-world#513,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/Genesis-Embodied-AI/genesis-world#513,pip,UNSAT,1,real,,,,11,27,2,genesis-world pygltflib,True,3,3,1,1,True
+real/Genesis-Embodied-AI/genesis-world#513,pip-baseline,UNSAT,1,real,,,,9,25,2,genesis-world pygltflib,True,3,3,0,0,True
+real/Genesis-Embodied-AI/genesis-world#513,uv,UNSAT,1,real,,,,6,6,2,genesis-world pygltflib,True,2,2,,,True
+real/HolyWu/vs-dpir#39,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/HolyWu/vs-dpir#39,pip,UNSAT,1,real,,,,2,11,2,vapoursynth vsdpir,True,0,0,0,0,True
+real/HolyWu/vs-dpir#39,pip-baseline,UNSAT,1,real,,,,2,7,2,tensorrt vsdpir,True,0,0,0,0,True
+real/HolyWu/vs-dpir#39,uv,UNSAT,1,real,,,,7,7,2,torch-tensorrt-fx-only vsdpir,True,2,2,,,True
+real/InternRobotics/NavDP#64,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/InternRobotics/NavDP#64,pip,UNSAT,1,real,,,,10,12,1,imageio,True,2,2,1,1,True
+real/InternRobotics/NavDP#64,pip-baseline,UNSAT,1,real,,,,8,10,1,imageio,True,2,2,0,0,True
+real/InternRobotics/NavDP#64,uv,UNSAT,1,real,,,,3,3,1,imageio,True,1,1,,,True
+real/LEMAS-Project/LEMAS-Edit#1,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/LEMAS-Project/LEMAS-Edit#1,pip,UNSAT,1,real,,,,2,12,2,tokenizers transformers,True,0,0,0,0,True
+real/LEMAS-Project/LEMAS-Edit#1,pip-baseline,UNSAT,1,real,,,,2,12,2,tokenizers transformers,True,0,0,0,0,True
+real/LEMAS-Project/LEMAS-Edit#1,uv,UNSAT,1,real,,,,8,8,2,tokenizers transformers,True,2,2,,,True
+real/MarshalX/atproto#688,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/MarshalX/atproto#688,pip,UNSAT,1,real,,,,10,15,2,atproto cryptography,True,2,2,1,1,
+real/MarshalX/atproto#688,pip-baseline,UNSAT,1,real,,,,8,13,2,atproto cryptography,True,2,2,0,0,
+real/MarshalX/atproto#688,uv,UNSAT,1,real,,,,6,6,2,atproto cryptography,True,4,4,,,
+real/NVIDIA-NeMo/DataDesigner#1007,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/NVIDIA-NeMo/DataDesigner#1007,pip,UNSAT,1,real,,,,10,47,4,data-designer data-designer-engine fsspec pip,True,2,2,1,1,
+real/NVIDIA-NeMo/DataDesigner#1007,pip-baseline,UNSAT,1,real,,,,8,43,4,data-designer data-designer-engine fsspec pip,True,2,2,0,0,
+real/NVIDIA-NeMo/DataDesigner#1007,uv,UNSAT,1,real,,,,6,6,3,data-designer data-designer-engine fsspec,True,4,3,,,
+real/NVIDIA/garak#2248,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/NVIDIA/garak#2248,pip,UNSAT,1,real,,,,10,30,3,datasets garak pip,True,2,2,1,1,
+real/NVIDIA/garak#2248,pip-baseline,UNSAT,1,real,,,,8,28,3,datasets garak pip,True,2,2,0,0,
+real/NVIDIA/garak#2248,uv,UNSAT,1,real,,,,6,6,2,datasets garak,True,2,2,,,
+real/QwenLM/Qwen3-ASR#214,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/QwenLM/Qwen3-ASR#214,pip,UNSAT,1,real,,,,10,18,3,nagisa pip qwen-asr,True,2,2,1,1,
+real/QwenLM/Qwen3-ASR#214,pip-baseline,UNSAT,1,real,,,,8,16,3,nagisa pip qwen-asr,True,2,2,0,0,
+real/QwenLM/Qwen3-ASR#214,uv,UNSAT,1,real,,,,6,6,2,nagisa qwen-asr,True,2,2,,,
+real/SkyCascade/SkyLearn#1,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/SkyCascade/SkyLearn#1,pip,UNSAT,1,real,,,,10,12,1,django-modeltranslation,True,2,2,1,1,True
+real/SkyCascade/SkyLearn#1,pip-baseline,UNSAT,1,real,,,,8,10,1,django-modeltranslation,True,2,2,0,0,True
+real/SkyCascade/SkyLearn#1,uv,UNSAT,1,real,,,,4,4,1,django-modeltranslation,True,1,1,,,True
+real/Smilo-dev2022/kasi-fiber-deployment-management#86,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/Smilo-dev2022/kasi-fiber-deployment-management#86,pip,UNSAT,1,real,,,,10,12,1,minio,True,2,2,1,1,True
+real/Smilo-dev2022/kasi-fiber-deployment-management#86,pip-baseline,UNSAT,1,real,,,,8,10,1,minio,True,2,2,0,0,True
+real/Smilo-dev2022/kasi-fiber-deployment-management#86,uv,UNSAT,1,real,,,,3,3,1,minio,True,1,1,,,True
+real/Sport-Performance-Lab/mplbasketball#26,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/Sport-Performance-Lab/mplbasketball#26,pip,UNSAT,1,real,,,,11,47,3,floodlight mplbasketball numpy,True,3,3,1,1,
+real/Sport-Performance-Lab/mplbasketball#26,pip-baseline,UNSAT,1,real,,,,10,28,3,floodlight mplbasketball numpy,True,4,3,0,0,
+real/Sport-Performance-Lab/mplbasketball#26,uv,UNSAT,1,real,,,,14,14,3,floodlight mplbasketball numpy,True,5,5,,,
+real/UKPLab/acl2024-triple-encoders#1,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/UKPLab/acl2024-triple-encoders#1,pip,UNSAT,1,real,,,,10,16,2,sentence-transformers triple-encoders,True,2,2,1,1,True
+real/UKPLab/acl2024-triple-encoders#1,pip-baseline,UNSAT,1,real,,,,8,14,2,sentence-transformers triple-encoders,True,2,2,0,0,True
+real/UKPLab/acl2024-triple-encoders#1,uv,UNSAT,1,real,,,,6,6,2,sentence-transformers triple-encoders,True,2,2,,,True
+real/aiidateam/aiida-core#6470,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/aiidateam/aiida-core#6470,pip,UNSAT,1,real,,,,2,23,2,aiida-core pgsu,True,0,0,0,0,
+real/aiidateam/aiida-core#6470,pip-baseline,UNSAT,1,real,,,,2,23,2,aiida-core pgsu,True,0,0,0,0,
+real/aiidateam/aiida-core#6470,uv,UNSAT,1,real,,,,6,6,3,aiida-core pymatgen tabulate,True,3,3,,,
+real/aio-libs/aiohttp#13979,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/aio-libs/aiohttp#13979,pip,UNSAT,1,real,,,,10,18,2,aiohttp multidict,True,2,2,1,1,True
+real/aio-libs/aiohttp#13979,pip-baseline,UNSAT,1,real,,,,8,16,2,aiohttp multidict,True,2,2,0,0,True
+real/aio-libs/aiohttp#13979,uv,UNSAT,1,real,,,,5,5,2,aiohttp multidict,True,4,4,,,True
+real/assafelovic/gpt-researcher#326,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/assafelovic/gpt-researcher#326,pip,UNSAT,1,real,,,,10,12,1,openai,True,2,2,1,1,True
+real/assafelovic/gpt-researcher#326,pip-baseline,UNSAT,1,real,,,,8,10,1,openai,True,2,2,0,0,True
+real/assafelovic/gpt-researcher#326,uv,UNSAT,1,real,,,,3,3,1,openai,True,1,1,,,True
+real/astral-sh/uv#1688,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/astral-sh/uv#1688,pip,UNSAT,1,real,,,,11,16,2,custom-package sqlalchemy,True,3,3,1,1,
+real/astral-sh/uv#1688,pip-baseline,UNSAT,1,real,,,,9,14,2,custom-package sqlalchemy,True,3,3,0,0,
+real/astral-sh/uv#1688,uv,UNSAT,1,real,,,,6,6,2,custom-package sqlalchemy,True,2,2,,,
+real/astral-sh/uv#2192,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/astral-sh/uv#2192,pip,UNSAT,1,real,,,,2,5,2,aiidalab-widgets-base pycifrw,True,0,0,0,0,
+real/astral-sh/uv#2192,pip-baseline,UNSAT,1,real,,,,2,5,2,aiidalab-widgets-base pycifrw,True,0,0,0,0,
+real/astral-sh/uv#2192,uv,UNSAT,1,real,,,,6,6,2,aiidalab-widgets-base pycifrw,True,2,2,,,
+real/astral-sh/uv#4252,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/astral-sh/uv#4252,pip,UNSAT,1,real,,,,28,82,5,girder-client monailabel python-multipart pyyaml timeloop,True,17,17,4,3,
+real/astral-sh/uv#4252,pip-baseline,UNSAT,1,real,,,,23,77,5,girder-client monailabel python-multipart pyyaml timeloop,True,17,17,0,0,
+real/astral-sh/uv#4252,uv,UNSAT,1,real,,,,45,45,3,girder-client monailabel python-multipart,True,4,4,,,
+real/auth0/.github#18,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/auth0/.github#18,pip,UNSAT,1,real,,,,14,23,2,auth0-python cryptography,True,6,6,1,1,True
+real/auth0/.github#18,pip-baseline,UNSAT,1,real,,,,16,25,2,auth0-python cryptography,True,10,6,0,0,True
+real/auth0/.github#18,uv,UNSAT,1,real,,,,11,11,2,auth0-python cryptography,True,6,4,,,True
+real/autotraderuk/dbt-dry-run#93,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/autotraderuk/dbt-dry-run#93,pip,UNSAT,1,real,,,,10,17,2,dbt-dry-run pydantic,True,2,2,1,1,
+real/autotraderuk/dbt-dry-run#93,pip-baseline,UNSAT,1,real,,,,8,15,2,dbt-dry-run pydantic,True,2,2,0,0,
+real/autotraderuk/dbt-dry-run#93,uv,UNSAT,1,real,,,,6,6,2,dbt-dry-run pydantic,True,4,4,,,
+real/butler54/mdformat-frontmatter#37,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/butler54/mdformat-frontmatter#37,pip,UNSAT,1,real,,,,10,15,2,mdformat mdformat-frontmatter,True,2,2,1,1,
+real/butler54/mdformat-frontmatter#37,pip-baseline,UNSAT,1,real,,,,8,13,2,mdformat mdformat-frontmatter,True,2,2,0,0,
+real/butler54/mdformat-frontmatter#37,uv,UNSAT,1,real,,,,6,6,2,mdformat mdformat-frontmatter,True,3,3,,,
+real/caozhaoqi/anime_role_detect#8,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/caozhaoqi/anime_role_detect#8,pip,UNSAT,1,real,,,,10,12,1,aiohttp,True,2,2,1,1,True
+real/caozhaoqi/anime_role_detect#8,pip-baseline,UNSAT,1,real,,,,8,10,1,aiohttp,True,2,2,0,0,True
+real/caozhaoqi/anime_role_detect#8,uv,UNSAT,1,real,,,,3,3,1,aiohttp,True,1,1,,,True
+real/conda-forge/opentelemetry-instrumentation-pinecone-feedstock#82,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/conda-forge/opentelemetry-instrumentation-pinecone-feedstock#82,pip,UNSAT,1,real,,,,2,7,2,opentelemetry-instrumentation-pinecone opentelemetry-semantic-conventions-ai,True,0,0,0,0,
+real/conda-forge/opentelemetry-instrumentation-pinecone-feedstock#82,pip-baseline,UNSAT,1,real,,,,2,7,2,opentelemetry-instrumentation-pinecone opentelemetry-semantic-conventions-ai,True,0,0,0,0,
+real/conda-forge/opentelemetry-instrumentation-pinecone-feedstock#82,uv,UNSAT,1,real,,,,7,7,2,opentelemetry-instrumentation-pinecone opentelemetry-semantic-conventions-ai,True,2,2,,,
+real/csala/mdformat-pyproject#18,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/csala/mdformat-pyproject#18,pip,UNSAT,1,real,,,,10,15,2,mdformat mdformat-pyproject,True,2,2,1,1,
+real/csala/mdformat-pyproject#18,pip-baseline,UNSAT,1,real,,,,8,13,2,mdformat mdformat-pyproject,True,2,2,0,0,
+real/csala/mdformat-pyproject#18,uv,UNSAT,1,real,,,,6,6,2,mdformat mdformat-pyproject,True,3,3,,,
+real/csala/mdformat-simple-breaks#3,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/csala/mdformat-simple-breaks#3,pip,UNSAT,1,real,,,,10,15,2,mdformat mdformat-simple-breaks,True,2,2,1,1,
+real/csala/mdformat-simple-breaks#3,pip-baseline,UNSAT,1,real,,,,8,13,2,mdformat mdformat-simple-breaks,True,2,2,0,0,
+real/csala/mdformat-simple-breaks#3,uv,UNSAT,1,real,,,,7,7,2,mdformat mdformat-simple-breaks,True,3,3,,,
+real/executablebooks/mdformat-deflist#7,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/executablebooks/mdformat-deflist#7,pip,UNSAT,1,real,,,,10,15,2,mdformat mdformat-deflist,True,2,2,1,1,
+real/executablebooks/mdformat-deflist#7,pip-baseline,UNSAT,1,real,,,,8,13,2,mdformat mdformat-deflist,True,2,2,0,0,
+real/executablebooks/mdformat-deflist#7,uv,UNSAT,1,real,,,,6,6,2,mdformat mdformat-deflist,True,3,3,,,
+real/executablebooks/mdformat-myst#43,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/executablebooks/mdformat-myst#43,pip,UNSAT,1,real,,,,11,22,3,mdformat mdformat-footnote mdformat-myst,True,3,3,1,1,
+real/executablebooks/mdformat-myst#43,pip-baseline,UNSAT,1,real,,,,9,20,3,mdformat mdformat-footnote mdformat-myst,True,3,3,0,0,
+real/executablebooks/mdformat-myst#43,uv,UNSAT,1,real,,,,9,9,3,mdformat mdformat-myst mdformat-tables,True,6,5,,,
+real/facebookresearch/xformers#1374,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/facebookresearch/xformers#1374,pip,UNSAT,1,real,,,,2,6,2,torch xformers,True,0,0,0,0,True
+real/facebookresearch/xformers#1374,pip-baseline,UNSAT,1,real,,,,2,6,2,torch xformers,True,0,0,0,0,True
+real/facebookresearch/xformers#1374,uv,UNSAT,1,real,,,,6,6,2,torch xformers,True,2,2,,,True
+real/future-agi/traceAI#269,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/future-agi/traceAI#269,pip,UNSAT,1,real,,,,15,108,4,google-adk google-genai pip traceai-google-adk,True,7,7,1,1,
+real/future-agi/traceAI#269,pip-baseline,UNSAT,1,real,,,,18,54,4,google-adk google-genai pip traceai-google-adk,True,12,7,0,0,
+real/future-agi/traceAI#269,uv,UNSAT,1,real,,,,7,7,3,google-adk google-genai traceai-google-adk,True,3,3,,,
+real/goglesquirmintontheiii/streamdeck-plus-software#1,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/goglesquirmintontheiii/streamdeck-plus-software#1,pip,UNSAT,1,real,,,,10,12,1,pillow,True,2,2,1,1,True
+real/goglesquirmintontheiii/streamdeck-plus-software#1,pip-baseline,UNSAT,1,real,,,,8,10,1,pillow,True,2,2,0,0,True
+real/goglesquirmintontheiii/streamdeck-plus-software#1,uv,UNSAT,1,real,,,,3,3,1,pillow,True,1,1,,,True
+real/gridstatus/gridstatus#974,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/gridstatus/gridstatus#974,pip,UNSAT,1,real,,,,10,15,3,certifi gridstatus pip,True,2,2,1,1,
+real/gridstatus/gridstatus#974,pip-baseline,UNSAT,1,real,,,,8,13,3,certifi gridstatus pip,True,2,2,0,0,
+real/gridstatus/gridstatus#974,uv,UNSAT,1,real,,,,6,6,2,certifi gridstatus,True,2,2,,,
+real/grpc/grpc#39262,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/grpc/grpc#39262,pip,UNSAT,1,real,,,,10,14,2,grpcio-status protobuf,True,2,2,1,1,True
+real/grpc/grpc#39262,pip-baseline,UNSAT,1,real,,,,8,12,2,grpcio-status protobuf,True,2,2,0,0,True
+real/grpc/grpc#39262,uv,UNSAT,1,real,,,,6,6,2,grpcio-status protobuf,True,4,4,,,True
+real/ipa-lab/hackingBuddyGPT#100,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/ipa-lab/hackingBuddyGPT#100,pip,UNSAT,1,real,,,,10,16,2,hackingbuddygpt requests,True,2,2,1,1,
+real/ipa-lab/hackingBuddyGPT#100,pip-baseline,UNSAT,1,real,,,,8,14,2,hackingbuddygpt requests,True,2,2,0,0,
+real/ipa-lab/hackingBuddyGPT#100,uv,UNSAT,1,real,,,,6,6,2,hackingbuddygpt requests,True,2,2,,,
+real/khoj-ai/khoj#1224,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/khoj-ai/khoj#1224,pip,UNSAT,1,real,,,,92,204,3,docx2txt khoj pip,True,84,84,1,1,True
+real/khoj-ai/khoj#1224,pip-baseline,UNSAT,1,real,,,,90,202,3,docx2txt khoj pip,True,84,84,0,0,True
+real/khoj-ai/khoj#1224,uv,UNSAT,1,real,,,,6,6,2,docx2txt khoj,True,2,2,,,True
+real/kubeflow/pipelines#13723,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/kubeflow/pipelines#13723,pip,UNSAT,1,real,,,,2,13,2,kfp kfp-server-api,True,0,0,0,0,
+real/kubeflow/pipelines#13723,pip-baseline,UNSAT,1,real,,,,2,13,2,kfp kfp-server-api,True,0,0,0,0,
+real/kubeflow/pipelines#13723,uv,UNSAT,1,real,,,,5,5,2,kfp requests,True,4,4,,,
+real/marcosschroh/python-schema-registry-client#243,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/marcosschroh/python-schema-registry-client#243,pip,UNSAT,1,real,,,,10,21,2,httpx python-schema-registry-client,True,2,2,1,1,True
+real/marcosschroh/python-schema-registry-client#243,pip-baseline,UNSAT,1,real,,,,8,19,2,httpx python-schema-registry-client,True,2,2,0,0,True
+real/marcosschroh/python-schema-registry-client#243,uv,UNSAT,1,real,,,,7,7,2,httpx python-schema-registry-client,True,3,3,,,True
+real/miaoshouai/ComfyUI-Miaoshouai-Tagger#52,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/miaoshouai/ComfyUI-Miaoshouai-Tagger#52,pip,UNSAT,1,real,,,,11,13,1,pillow,True,3,3,1,1,True
+real/miaoshouai/ComfyUI-Miaoshouai-Tagger#52,pip-baseline,UNSAT,1,real,,,,9,11,1,pillow,True,3,3,0,0,True
+real/miaoshouai/ComfyUI-Miaoshouai-Tagger#52,uv,UNSAT,1,real,,,,3,3,1,pillow,True,1,1,,,True
+real/microsoft/Biodiversity#443,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/microsoft/Biodiversity#443,pip,UNSAT,1,real,,,,16,28,2,pytorchwildlife torch,True,8,8,1,1,True
+real/microsoft/Biodiversity#443,pip-baseline,UNSAT,1,real,,,,14,26,2,pytorchwildlife torch,True,8,8,0,0,True
+real/microsoft/Biodiversity#443,uv,UNSAT,1,real,,,,6,6,2,pytorchwildlife torch,True,2,2,,,True
+real/mindee/doctr#2145,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/mindee/doctr#2145,pip,UNSAT,1,real,,,,10,12,1,nvidia-cublas,True,2,2,1,1,True
+real/mindee/doctr#2145,pip-baseline,UNSAT,1,real,,,,8,10,1,nvidia-cublas,True,2,2,0,0,True
+real/mindee/doctr#2145,uv,UNSAT,1,real,,,,3,3,1,nvidia-cublas,True,1,1,,,True
+real/opendatalab/MinerU#1361,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/opendatalab/MinerU#1361,pip,UNSAT,1,real,,,,10,12,1,magic-pdf,True,2,2,1,1,True
+real/opendatalab/MinerU#1361,pip-baseline,UNSAT,1,real,,,,8,10,1,magic-pdf,True,2,2,0,0,True
+real/opendatalab/MinerU#1361,uv,UNSAT,1,real,,,,3,3,1,magic-pdf,True,1,1,,,True
+real/oskar-j/fastcat#29,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/oskar-j/fastcat#29,pip,UNSAT,1,real,,,,17,29,2,fastcat redis,True,9,9,1,1,
+real/oskar-j/fastcat#29,pip-baseline,UNSAT,1,real,,,,22,34,2,fastcat redis,True,16,9,0,0,
+real/oskar-j/fastcat#29,uv,UNSAT,1,real,,,,5,5,2,fastcat redis,True,3,3,,,
+real/pkadambi/Wav2TextGrid#5,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/pkadambi/Wav2TextGrid#5,pip,UNSAT,1,real,,,,2,19,2,distance wav2textgrid,True,0,0,0,0,
+real/pkadambi/Wav2TextGrid#5,pip-baseline,UNSAT,1,real,,,,2,19,2,distance wav2textgrid,True,0,0,0,0,
+real/pkadambi/Wav2TextGrid#5,uv,UNSAT,1,real,,,,6,6,2,distance wav2textgrid,True,2,2,,,
+real/pypa/pip#10499,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/pypa/pip#10499,pip,UNSAT,1,real,,,,10,12,1,six,True,2,2,1,1,True
+real/pypa/pip#10499,pip-baseline,UNSAT,1,real,,,,8,10,1,six,True,2,2,0,0,True
+real/pypa/pip#10499,uv,UNSAT,1,real,,,,3,3,1,six,True,1,1,,,True
+real/pypa/pip#14193,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/pypa/pip#14193,pip,UNSAT,1,real,,,,10,16,2,botocore urllib3,True,2,2,1,1,True
+real/pypa/pip#14193,pip-baseline,UNSAT,1,real,,,,8,14,2,botocore urllib3,True,2,2,0,0,True
+real/pypa/pip#14193,uv,UNSAT,1,real,,,,6,6,2,botocore urllib3,True,4,4,,,True
+real/rajpurkarlab/CRIMSON#3,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/rajpurkarlab/CRIMSON#3,pip,UNSAT,1,real,,,,11,80,4,crimson-score gradio pandas pip,True,3,3,1,1,True
+real/rajpurkarlab/CRIMSON#3,pip-baseline,UNSAT,1,real,,,,10,49,4,crimson-score gradio pandas pip,True,4,3,0,0,True
+real/rajpurkarlab/CRIMSON#3,uv,UNSAT,1,real,,,,6,6,3,crimson-score gradio pillow,True,3,3,,,True
+real/rakuri255/UltraSinger#302,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/rakuri255/UltraSinger#302,pip,UNSAT,1,real,,,,15,45,4,antlr4-python3-runtime omegaconf pip pyannote-audio,True,7,7,1,1,True
+real/rakuri255/UltraSinger#302,pip-baseline,UNSAT,1,real,,,,13,54,4,antlr4-python3-runtime omegaconf pip pyannote-audio,True,7,7,0,0,True
+real/rakuri255/UltraSinger#302,uv,UNSAT,1,real,,,,29,29,3,antlr4-python3-runtime omegaconf pyannote-audio,True,3,3,,,True
+real/stegm/pykoplenti#37,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/stegm/pykoplenti#37,pip,UNSAT,1,real,,,,10,15,2,pycryptodome pykoplenti,True,2,2,1,1,
+real/stegm/pykoplenti#37,pip-baseline,UNSAT,1,real,,,,8,13,2,pycryptodome pykoplenti,True,2,2,0,0,
+real/stegm/pykoplenti#37,uv,UNSAT,1,real,,,,6,6,2,pycryptodome pykoplenti,True,2,2,,,
+real/swimlane/pyattck#154,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/swimlane/pyattck#154,pip,UNSAT,1,real,,,,19,38,3,attrs fire pyattck,True,10,10,2,1,True
+real/swimlane/pyattck#154,pip-baseline,UNSAT,1,real,,,,23,38,3,attrs fire pyattck,True,17,10,0,0,True
+real/swimlane/pyattck#154,uv,UNSAT,1,real,,,,6,6,2,attrs pyattck,True,4,3,,,True
+real/tenstorrent/tt-topology#71,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/tenstorrent/tt-topology#71,pip,UNSAT,1,real,,,,10,24,3,tt-smi tt-tools-common tt-topology,True,2,2,1,1,True
+real/tenstorrent/tt-topology#71,pip-baseline,UNSAT,1,real,,,,8,22,3,tt-smi tt-tools-common tt-topology,True,2,2,0,0,True
+real/tenstorrent/tt-topology#71,uv,UNSAT,1,real,,,,6,6,3,pyluwen tt-smi tt-topology,True,3,3,,,True
+real/unslothai/unsloth#8926,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/unslothai/unsloth#8926,pip,UNSAT,1,real,,,,2,12,2,cuda-toolkit torch,True,0,0,0,0,True
+real/unslothai/unsloth#8926,pip-baseline,UNSAT,1,real,,,,2,12,2,cuda-toolkit torch,True,0,0,0,0,True
+real/unslothai/unsloth#8926,uv,UNSAT,1,real,,,,6,6,2,cuda-toolkit torch,True,2,2,,,True
+real/vllm-project/vllm#11283,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/vllm-project/vllm#11283,pip,UNSAT,1,real,,,,15,93,7,compressed-tensors outlines torch torchvision vllm vllm-flash-attn xformers,True,7,7,1,1,
+real/vllm-project/vllm#11283,pip-baseline,UNSAT,1,real,,,,18,94,7,compressed-tensors outlines torch torchvision vllm vllm-flash-attn xformers,True,12,7,0,0,
+real/vllm-project/vllm#11283,uv,UNSAT,1,real,,,,6,6,3,torch vllm vllm-flash-attn,True,3,3,,,
+real/wwbin2017/bailing#25,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/wwbin2017/bailing#25,pip,UNSAT,1,real,,,,10,12,1,requests,True,2,2,1,1,True
+real/wwbin2017/bailing#25,pip-baseline,UNSAT,1,real,,,,8,10,1,requests,True,2,2,0,0,True
+real/wwbin2017/bailing#25,uv,UNSAT,1,real,,,,3,3,1,requests,True,1,1,,,True
+real/yoke-project/yoke#183,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/yoke-project/yoke#183,pip,UNSAT,1,real,,,,10,16,2,yoke-proto yoke-sdk,True,2,2,1,1,
+real/yoke-project/yoke#183,pip-baseline,UNSAT,1,real,,,,8,14,2,yoke-proto yoke-sdk,True,2,2,0,0,
+real/yoke-project/yoke#183,uv,UNSAT,1,real,,,,6,6,2,yoke-proto yoke-sdk,True,2,2,,,
+real/zest-sw/npu-challenge-remember#65,crux-e2e,UNSAT,0,real,,,,,,,,,,,,,
+real/zest-sw/npu-challenge-remember#65,pip,UNSAT,1,real,,,,10,12,2,pip ultralytics,True,2,2,1,1,True
+real/zest-sw/npu-challenge-remember#65,pip-baseline,UNSAT,1,real,,,,8,10,2,pip ultralytics,True,2,2,0,0,True
+real/zest-sw/npu-challenge-remember#65,uv,UNSAT,1,real,,,,3,3,1,ultralytics,True,1,1,,,True

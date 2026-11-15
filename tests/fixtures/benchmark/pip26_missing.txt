@@ -1,0 +1,3 @@
+Looking in links: <wheels>/planted_impossible_d0_none_s0/wheels
+ERROR: Could not find a version that satisfies the requirement meadow>=2.2.0 (from versions: none)
+ERROR: No matching distribution found for meadow>=2.2.0
