@@ -208,10 +208,10 @@ def timeout_notes(crux) -> str:
 
 def cores_section(cores: Path) -> str:
     env = json.loads((cores / "env_universe.json").read_text())
-    out = [f"Core extraction is `crux.explain` (Yash Kejriwal), commit "
-           f"`{env['explain_last_commit'][:7]}` (pull request #2, not merged when "
-           "this ran). Each planted core is the unique minimal core, so an "
-           "extracted core is correct only if it equals the planted one.", ""]
+    out = [f"Core extraction is `crux.explain` (Yash Kejriwal), last changed in "
+           f"commit `{env['explain_last_commit'][:7]}`. Each planted core is the "
+           "unique minimal core, so an extracted core is correct only if it equals "
+           "the planted one.", ""]
     for start, label in (("solver", "the solver's own conflict (explain's default)"),
                          ("universe", "every constraint of the instance")):
         f = cores / f"cores_{start}.csv"
@@ -239,7 +239,116 @@ def cores_section(cores: Path) -> str:
             out += [f"Here the starting conflict already equals the planted core on "
                     f"{same} of {sum(1 for r in rows if r['method'] == 'deletion')} "
                     "instances, so extraction only confirms minimality. Starting from "
-                    "every constraint tests the reduction itself:", ""]
+                    "every constraint tests the reduction itself.", ""]
+    return "\n".join(out).rstrip()
+
+
+def real_cores_section(cores: Path) -> str:
+    """Core extraction on the reproduced real conflicts (real_cores output)."""
+    env = json.loads((cores / "env_real.json").read_text())
+    rows = _rows(cores / "real_cores.csv")
+    recs = [json.loads(l) for l in (cores / "real_cores.jsonl").read_text().splitlines()]
+    msgs = _rows(cores / "real_messages.csv")
+    n = len(recs)
+    out = [f"`crux.explain` (last changed in `{env['explain_last_commit'][:7]}`) "
+           f"on the {n} reproduced real conflicts, from the solver's own conflict "
+           "(`explain`, the call the CLI and renderer make). There is no planted "
+           "answer here, so the checks are: the independent verifier, and whether "
+           "the core is the only minimal core (it is if removing any one of its "
+           "members from the whole instance leaves a plan, each plan checked "
+           "independently).", ""]
+    table = []
+    for m in ("deletion", "deletion+refine", "quickxplain"):
+        rs = [r for r in rows if r["method"] == m]
+        sizes = [int(r["core_size"]) for r in rs]
+        calls = [int(r["calls"]) for r in rs]
+        secs = [float(r["wall_s"]) for r in rs]
+        table.append([m, sum(r["claimed_minimal"] == "True" for r in rs),
+                      f"{statistics.median(sizes):.0f} (max {max(sizes)})",
+                      f"{statistics.median(calls):.0f} (max {max(calls)})",
+                      f"{statistics.median(secs):.2f} (max {max(secs):.1f})",
+                      sum(int(r["timeouts"]) for r in rs)])
+    by = {}
+    for r in recs:
+        by[r["verify_unsat_by"]] = by.get(r["verify_unsat_by"], 0) + 1
+    ok = sum(r["verify_unsat"] is True and r["verify_minimal"] is True for r in recs)
+    out += [_table(["method", "claims minimal", "core size (median)",
+                    "solver calls (median)", "seconds (median)", "solver timeouts"],
+                   table), "",
+            f"The three methods return the same core on "
+            f"{sum(r['methods_agree'] for r in recs)} of {n}. The verifier confirms "
+            f"the {env['primary']} core is unsatisfiable and minimal on {ok} of {n} "
+            f"(unsatisfiable by " + ", ".join(f"{k} {v}" for k, v in sorted(by.items()))
+            + "; 'oracle' is exhaustive search, 'solvers' is two different "
+            "solvers agreeing).", ""]
+
+    def cnt(u, rb):
+        return sum(r["unique"] == u and r["robust"] is rb for r in recs)
+    tab = [["only minimal core", cnt("unique", True), cnt("unique", False),
+            cnt("unique", True) + cnt("unique", False)],
+           ["another minimal core exists", cnt("not_unique", True),
+            cnt("not_unique", False), cnt("not_unique", True) + cnt("not_unique", False)]]
+    unk = sum(r["unique"] == "unknown" or r["robust"] is None for r in recs)
+    rob = [r for r in recs if r["robust"]]
+    pk = {}
+    for r in rob:
+        k = len(r["core_packages"])
+        pk[k] = pk.get(k, 0) + 1
+    out += ["Kind of conflict ('robust': still unsatisfiable when every requirement "
+            "that no release in the snapshot meets is ignored, so the conflict is "
+            "among releases that exist; otherwise it rests on a version the "
+            "snapshot lacks):", "",
+            _table(["", "robust", "rests on a missing version", "total"], tab), ""]
+    if unk:
+        out += [f"Undecided (timeouts): {unk}.", ""]
+    out += [f"Robust cores are small: median {_med(r['core_size'] for r in rob):.0f} "
+            f"constraints and {_med(r['core_groups'] for r in rob):.0f} statements "
+            "grouped by (package, dependency); packages per core: "
+            + ", ".join(f"{k}: {pk[k]}" for k in sorted(pk)) + "."]
+    pin = sum(r["core_unavailable"] > 0 and r["robust"] for r in recs)
+    if pin:
+        out += [f"On {pin} robust instances the core shown still uses a "
+                "requirement no release meets, although a core among existing "
+                "releases exists."]
+    if env.get("drop_reasons_from_db"):
+        rs = {}
+        for r in recs:
+            for x in r.get("unavailable_reasons", []):
+                rs[x] = rs.get(x, 0) + 1
+        k = sum(r["core_unavailable"] > 0 for r in recs)
+        out += ["", f"Why the missing versions are missing ({k} cores with such a "
+                "member; one core can have several reasons): "
+                + ", ".join(f"`{x}` {rs[x]}" for x in sorted(rs, key=lambda x: -rs[x]))
+                + " (`no_wheel`: source-only release, outside the snapshot's scope)."]
+    out += ["", "What pip's and uv's messages name, scored against the cores that "
+            "are the only minimal core (as for planted cores):", ""]
+    mt = []
+    for t in ("pip", "pip-baseline", "uv"):
+        rs = [r for r in msgs if r["tool"] == t and r["unique"] == "unique"]
+        if not rs:
+            continue
+        mt.append([t, len(rs), _med(_f(r["core_recall"]) for r in rs),
+                   sum(r["names_whole_core"] == "True" for r in rs),
+                   _med(_f(r["core_precision"]) for r in rs),
+                   f"{_med(int(r['msg_lines']) for r in rs):.0f}"])
+    out += [_table(["tool", "messages", "core recall (median)", "names whole core",
+                    "precision (median)", "lines (median)"], mt), ""]
+    method = {r["instance"]: r.get("screening") for r in recs}
+    b = [r for r in msgs if r["unique"] == "unique" and method.get(r["instance"]) == "B"]
+    if b:
+        out += ["Only requests taken from the install command (screening method B, "
+                "so the request is not built from pip's own message): "
+                + "; ".join(f"{t} names the whole core in "
+                            f"{sum(r['names_whole_core'] == 'True' for r in b if r['tool'] == t)}"
+                            f" of {sum(r['tool'] == t for r in b)}"
+                            for t in ("pip", "pip-baseline", "uv")) + ".", ""]
+    oc = [r for r in recs if r["original_conflict"]]
+    if oc:
+        eq = sum(set(r["original_conflict"]) == set(r["core_packages"]) for r in oc)
+        ov = sum(bool(set(r["original_conflict"]) & set(r["core_packages"])) for r in oc)
+        out += [f"Against the reporter's own pip output ({len(oc)} cases quoting "
+                f"pip's conflict lines): the core's packages are exactly the packages "
+                f"pip blamed in {eq}, and share at least one in {ov}."]
     return "\n".join(out).rstrip()
 
 
@@ -492,6 +601,9 @@ def main(argv=None) -> int:
                "Time:", "", timing_table(rt, names), "",
                "Messages:", "", message_table(ro, names, with_core=False), "",
                "Crux configurations:", "", crux_table(rc), "", timeout_notes(rc)]
+    if a.cores and Path(a.cores, "env_real.json").exists():
+        md += ["", "### Core extraction on the real conflicts", "",
+               real_cores_section(Path(a.cores))]
     made = figures(out, po, deep, pc, names, funnel)
     if made:
         md += ["", "## Figures", ""] + [f"![{m}]({m})" for m in made]
