@@ -124,7 +124,7 @@ Replay of the kept requests on the snapshot as of each report date:
 | missing_dependency | 21 |
 | not_on_pypi | 10 |
 
-**Is the replay the user's failure?** For each reproduced case whose post includes pip's own conflict lines, does pip, run on our replayed data, name at least one package that pip named for the user? Yes for **32 of 33**. 28 reproduced cases have no conflict lines to compare (their request came from a command, or from uv); they are genuine conflicts on real metadata, but not shown to be the reporter's.
+**Is the replay the user's failure?** For each reproduced case whose post includes pip's own conflict lines, does pip, run on our replayed data, name at least one package that pip named for the user? Yes for **32 of 33**. 28 reproduced cases have no conflict lines to compare (their request came from a command, or from uv); they are conflicts on real metadata, but not shown to be the reporter's.
 
 ### Tools on the reproduced real conflicts
 
@@ -186,7 +186,7 @@ Kind of conflict ('robust': still unsatisfiable when every requirement that no r
 Robust cores are small: median 3 constraints and 3 statements grouped by (package, dependency); packages per core: 1: 14, 2: 24, 3: 7.
 On 2 robust instances the core shown still uses a requirement no release meets, although a core among existing releases exists.
 
-Why the missing versions are missing (18 cores with such a member; one core can have several reasons): `no_wheel` 14, `yanked` 4, `released_after_report` 4, `after_cutoff` 1, `py_version` 1, `no_version_found` 1 (`no_wheel`: source-only release, outside the snapshot's scope).
+Why the missing versions are missing (18 cores with such a member; one core can have several reasons): `no_wheel` 14, `yanked` 4, `released_after_report` 4, `after_cutoff` 1, `py_version` 1, `no_version_found` 1 (`no_wheel`: no wheel for CPython 3.12 on Linux x86-64, outside the snapshot's scope).
 
 What pip's and uv's messages name, scored against the cores that are the only minimal core (as for planted cores):
 
