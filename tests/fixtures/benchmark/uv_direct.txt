@@ -1,0 +1,6 @@
+  × No solution found when resolving dependencies:
+  ╰─▶ Because all versions of tamarack depend on beacon>=1.7.1 and
+      glyph>=1.1.0 depends on beacon<1.7.1, we can conclude that glyph>=1.1.0
+      and all versions of tamarack are incompatible.
+      And because you require glyph>=1.1.0 and tamarack, we can conclude that
+      your requirements are unsatisfiable.

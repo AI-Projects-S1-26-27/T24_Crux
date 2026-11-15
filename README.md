@@ -214,6 +214,21 @@ cutoff only excludes later uploads. TODO: `snapshots/` is not committed yet. Wit
 list instead of the 2026-11-01 one. Without a copy of `data/crux.db`, the pilot can't be
 reproduced byte for byte.
 
+## Benchmarking (pip, uv and Crux)
+
+Owner: Arrya Sridhar. Method in `docs/BENCHMARK.md`, every number in
+`benchmarks/results/REPORT.md` (generated from the result CSVs).
+
+- `benchmarks/planted/instances.jsonl`: 198 unsatisfiable instances whose
+  minimal core is proven unique (`python -m crux.benchmark.planted --verify ...`).
+- `benchmarks/corpus/`: 5,275 GitHub issues screened to 472 verified requests,
+  replayed on the snapshot as of each report date: 61 reproduced conflicts.
+- `python -m crux.benchmark.harness`: pip, uv and Crux on identical metadata
+  (instances written as metadata-only wheels, read with `--no-index`).
+- `python -m crux.benchmark.score_cores` / `real_cores`: core extraction
+  (`crux.explain`) scored against the planted cores, and checked on the real
+  conflicts (`benchmarks/results/cores/`).
+
 ## Running tests
 
 ```bash
@@ -234,6 +249,8 @@ crux/data/parse.py       pure parsing: metadata, Requires-Dist, requires-python,
 crux/data/clean.py       files + raw -> releases, deps, drops (CLI)
 crux/data/graph.py       Graph API for the solver (CLI prints load stats)
 crux/data/qa.py          SQL checks over the cleaned DB (CLI)
+crux/benchmark/          planted generator, real-failure corpus, pip/uv/Crux harness, report
+benchmarks/              planted instances, corpus, committed results and figures
 tests/data/              acceptance tests, one file per module
 tests/fixtures/          offline fixtures
 scripts/                 throwaway spike scripts (spike.py, spike2.py)
