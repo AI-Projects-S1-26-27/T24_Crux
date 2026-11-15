@@ -53,7 +53,9 @@ and nothing is committed yet (see section 3).
 1. Nothing from this work is committed or pushed.
 2. The final report is not written yet (section 3).
 3. Each member must be able to explain their component in the viva.
-4. No hard real conflict has ever been run through C4 (needs Arrya's corpus).
+4. ~~No hard real conflict has ever been run through C4.~~ Done by the benchmarking
+   work (docs/BENCHMARK.md): 61 real conflicts reproduced from GitHub issues; every
+   configuration answers UNSAT where it finishes, agreeing with pip and uv on all 61.
 5. `Graph.allowed()` costs about 4.6 s cold on `boto3` (data team's module).
 6. Explanation module, pip/uv comparison, user study, CLI belong to other members.
 7. LCV picks very old, dependency-free releases on real data (section 6.3): decide
@@ -598,6 +600,7 @@ real conflict**.
 | 4 | Independent review | done; 2 code bugs and 3 tooling flaws fixed, documentation corrected |
 | 4 | Hand the solver to Yash and Arrya | done for Yash: core extraction uses `solve` as its oracle |
 | 4 | Core extraction (deletion, deletion+refine, QuickXplain) and minimality verifier (Yash) | done; `crux/explain/`, `docs/EXPLAIN.md` |
+| 4 | Benchmarking: planted generator, real-failure corpus, pip/uv harness (Arrya) | done; `docs/BENCHMARK.md`, numbers in `benchmarks/results/REPORT.md` |
 | 4 | Commit and push; final report; viva preparation | **not done** (section 3) |
 
 Targets from the proposal (they can fail; report if missed): 100% SAT/UNSAT agreement with
@@ -631,8 +634,11 @@ harness and the real corpus).
   is inflated by AC-3's justifications, and `learning.py` `_explain` costs about 8 s per
   solve on the real boto3/botocore conflict when AC-3 is off (98% of the time in a profile).
 - Parth Gupta: the English renderer over `crux.explain.explain(problem).core`, the user study.
-- Arrya: the hard-case corpus (at least 50 real pip-issue failures), the planted-conflict
-  generator, the pip/uv harness.
+- Arrya: done (docs/BENCHMARK.md): 198 planted instances with proven unique cores
+  (`benchmarks/planted/`), 61 reproduced real conflicts (`benchmarks/corpus/`), the pip/uv/Crux
+  harness and its results. Open: score core extraction against the planted cores once it
+  exists; Crux's message once the renderer exists; the user study can draw on
+  `benchmarks/results/*/messages.jsonl`.
 - Ritika and Sumehra: a `==X` fast path in `Graph.allowed()` (about 4.6 s cold on `boto3`);
   the full 5,000-seed run (about 6.5 h) after deciding the JSON-fallback question (old wheels
   stored as zero dependencies; it changes the dataset); confirm and commit `snapshots/`
@@ -715,3 +721,10 @@ All entries are 2026-11-14 unless stated.
 - **2026-11-15 (Yash).** Core extraction and the minimality verifier in `crux/explain/`, with
   `tests/explain/` and `docs/EXPLAIN.md`; `crux.explain` added to `pyproject.toml`. Clarified
   the conflict-size figure in 5.7 and updated sections 0, 7 and 8. No resolver code changed.
+- **Benchmarking (Arrya Sridhar, 2026-11-15).** `crux/benchmark/`, `tests/benchmark/`,
+  `benchmarks/`, `docs/BENCHMARK.md`. Findings that touch this document: C4's conflict IS the
+  planted minimal core on 168 of 198 planted instances and contains it on all; C0 timed out on
+  37 planted (31 of the 66 with large noise), C4 on none. On real data AC-3 now shows a benefit
+  (5 real conflicts where C0 timed out after 125,864 to 971,446 nodes and C1 needed 0), C2 to
+  C4 none beyond it; all 25 C1-C4 timeouts at 10 s were at 0 nodes on the 5 largest graphs,
+  and profiling one shows 92% of the time in `Graph.allowed()` (section 8's `==X` fast path).
