@@ -270,9 +270,11 @@ def write_report(out: Path, results: dict, insts: dict, env: dict) -> Path:
         f"checked against the graph): {complete} of {len(crux_all)}.",
         f"- Explanation time (in-process, solve + core extraction + rendering): "
         f"median {_f(_med(times), 3)} s, max {_f(max(times), 2)} s.",
-        f"- {unav} of the 61 real messages say a version is missing without "
-        "saying why: the benchmark instances do not carry the data layer's drop "
-        "reasons yet (`Graph.why_missing`, `Instance.meta[\"drops\"]`).",
+        f"- {unav} of the 61 real messages say a requested version is missing "
+        "without a reason. The real instances carry the data layer's drop reasons "
+        "(`python -m crux.benchmark.add_drops`, from the corpus database), so "
+        "these are versions the database has no record of: they did not exist on "
+        "PyPI at all.",
     ]
     if sample:
         parts += ["Example (`grpc/grpc#39262`), as printed:",

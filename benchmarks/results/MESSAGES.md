@@ -34,7 +34,7 @@ Mean core recall (share of the planted conflict's packages the message names) an
 | pip 26.2.1 | 61 (61) | 10 | 79 | 36/36 | 1.00 | 0.95 |
 | pip 25.0.1 | 61 (61) | 8 | 65 | 36/36 | 1.00 | 0.95 |
 | uv 0.11.32 | 61 (61) | 6 | 40 | 36/36 | 1.00 | 1.00 |
-| Crux | 61 (61) | 4 | 24 | 36/36 | 1.00 | 1.00 |
+| Crux | 61 (61) | 4 | 24 | 36/36 | 1.00 | 0.99 |
 
 Medians over the 61 instances where all four tools report a conflict.
 
@@ -46,9 +46,9 @@ Core recall and `names every request` are scored on the 36 real conflicts whose 
 
 - Complete and confirmed (every group of the core shown, every clash checked against the graph): 259 of 259.
 
-- Explanation time (in-process, solve + core extraction + rendering): median 0.004 s, max 13.89 s.
+- Explanation time (in-process, solve + core extraction + rendering): median 0.004 s, max 14.37 s.
 
-- 18 of the 61 real messages say a version is missing without saying why: the benchmark instances do not carry the data layer's drop reasons yet (`Graph.why_missing`, `Instance.meta["drops"]`).
+- 1 of the 61 real messages say a requested version is missing without a reason. The real instances carry the data layer's drop reasons (`python -m crux.benchmark.add_drops`, from the corpus database), so these are versions the database has no record of: they did not exist on PyPI at all.
 
 Example (`grpc/grpc#39262`), as printed:
 

@@ -317,3 +317,11 @@ def test_a_group_off_every_path_is_still_shown():
     assert not m.complete
     assert m.lines[-1] == ("  Also involved: the only allowed version of b (1.0) "
                            "needs p.")
+
+
+def test_one_version_with_two_reasons_counts_once():
+    from crux.explain.render import one_reason_per_version
+    rows = [("2.0", "after_as_of"), ("2.0", "no_wheel"), ("1.9", "prerelease"),
+            ("1.9", "after_as_of"), ("1.8", "yanked")]
+    assert one_reason_per_version(rows) == [("2.0", "no_wheel"), ("1.9", "after_as_of"),
+                                            ("1.8", "yanked")]

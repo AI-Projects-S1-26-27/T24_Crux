@@ -61,8 +61,8 @@ REASONS = {
                    "require a Python other than {py}"),
     "after_cutoff": ("was released after the snapshot date",
                      "were released after the snapshot date"),
-    "after_as_of": ("was released after the cutoff date used",
-                    "were released after the cutoff date used"),
+    "after_as_of": ("was not yet released at the cutoff date",
+                    "were not yet released at the cutoff date"),
     "prerelease": ("is a pre-release, so it must be asked for explicitly",
                    "are pre-releases, so they must be asked for explicitly"),
     "no_metadata": ("has no readable metadata", "have no readable metadata"),
@@ -113,20 +113,40 @@ def _reason(reason: str, plural: bool) -> str:
         target=TARGET, py=TARGET_PYTHON, reason=reason)
 
 
+# when one version has several reasons, the one the message gives: the data
+# layer's own drop reason first, then a date cut-off, then the pre-release rule
+_LATER = {"after_as_of": 1, "prerelease": 2}
+
+
+def one_reason_per_version(rows) -> list[tuple[str, str]]:
+    """(version, reason) rows, newest first, with each version once."""
+    best: dict[str, str] = {}
+    order: list[str] = []
+    for v, r in rows:
+        if v not in best:
+            order.append(v)
+            best[v] = r
+        elif (_LATER.get(r, 0), r) < (_LATER.get(best[v], 0), best[v]):
+            best[v] = r
+    return [(v, best[v]) for v in order]
+
+
 def why_unavailable(graph: Graph, gr: Group) -> str:
     """Why no release of the group's dependency matches it."""
     t = gr.dep
-    rows = gr.missing
+    rows = one_reason_per_version(gr.missing)
     if len(rows) == 1:
         v, r = rows[0]
         return f"{t} {v} {_reason(r, False)}"
     if rows:
-        reasons = gr.missing_reasons
+        count: dict[str, int] = {}
+        for _, r in rows:
+            count[r] = count.get(r, 0) + 1
+        reasons = sorted(count, key=lambda r: (-count[r], r))
         n = len(rows)
         if len(reasons) == 1:
             return (f"the {n} matching releases of {t} all "
                     f"{_reason(reasons[0], True)}")
-        count = {r: sum(1 for _, x in rows if x == r) for r in reasons}
         parts = [f"{count[r]} {_reason(r, count[r] > 1)}" for r in reasons]
         return (f"none of the {n} matching releases of {t} is usable: "
                 + _and(parts))
