@@ -24,3 +24,7 @@ packages = ["crux", "crux.data", "crux.resolver", "crux.explain", "crux.benchmar
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# the user study's form template ships next to crux/benchmark/study.py
+[tool.setuptools.package-data]
+"crux.benchmark" = ["study_form.html"]
