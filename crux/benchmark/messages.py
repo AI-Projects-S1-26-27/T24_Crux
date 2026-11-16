@@ -8,7 +8,12 @@ message     what a user reads as the explanation.
             (pip puts "ERROR:" on stderr but "The conflict is caused by:" on
             stdout); progress and "INFO:" lines before it are excluded.
             uv: every line of stderr, minus lines starting "warning:".
+            crux: the rendered explanation as the CLI prints it, wrapped
+            at 80 columns (``crux.benchmark.crux_messages``).
 msg_lines   non-empty lines of the message.
+words       whitespace-separated words of the message: a length measure
+            that does not depend on where a tool wraps its lines (uv wraps
+            at about 80 columns, pip does not wrap).
 out_lines   non-empty lines of ALL output (stdout + stderr), i.e. everything
             printed before the user can stop reading.
 named       packages of the instance that the message mentions as a whole
@@ -57,6 +62,8 @@ def message(tool: str, text: str) -> str:
         return ""
     if tool.startswith("uv"):
         return "\n".join(l for l in lines if not l.lower().startswith("warning:"))
+    if tool.startswith("crux"):
+        return text
     raise ValueError(f"no message rule for tool {tool!r}")
 
 
@@ -104,10 +111,11 @@ def measure(tool: str, stdout: str, stderr: str, *, packages, roots,
     have no releases); ``roots``: requested package names;
     ``core_packages``: planted core packages, or None if unknown;
     ``has_releases(name) -> bool`` for pip's availability claims."""
-    msg = message(tool, stdout if tool.startswith("pip") else stderr)
+    msg = message(tool, stderr if tool.startswith("uv") else stdout)
     named = named_packages(msg, packages)
     m = {
         "msg_lines": _nonempty(msg),
+        "words": len(msg.split()),
         "out_lines": _nonempty(stdout) + _nonempty(stderr),
         "named": len(named),
         "named_list": " ".join(sorted(named)),

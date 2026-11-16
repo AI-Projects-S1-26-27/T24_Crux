@@ -74,8 +74,14 @@ class Instance:
         return tuple(Constraint.root(d, s) for d, s in self.roots)
 
     def problem(self, graph: Graph | None = None) -> Problem:
-        """The resolver's view.  Pass a prebuilt ``graph`` to reuse caches."""
-        g = graph if graph is not None else Graph.from_dict(self.graph)
+        """The resolver's view.  Pass a prebuilt ``graph`` to reuse caches.
+
+        ``meta["drops"]``, if present, is passed to ``Graph.from_dict`` so
+        ``why_missing`` can say why a requested version is absent
+        ({pkg: [[version, reason], ...]}; none of the committed instance
+        files carry it yet)."""
+        g = graph if graph is not None else Graph.from_dict(
+            self.graph, drops=self.meta.get("drops"))
         return Problem(g, self.root_constraints())
 
     def requirements(self) -> list[str]:
