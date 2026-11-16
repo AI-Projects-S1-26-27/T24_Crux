@@ -175,14 +175,15 @@ class Message:
         return "\n".join(self.lines)
 
     def wrapped(self, width: int) -> str:
-        """The text with each line wrapped to *width* columns (continuation
-        lines indented under their clause).  ``lines`` stays unwrapped: it is
+        """The text with each line wrapped to *width* columns: the headline
+        continues flush left, a clause continues two spaces further in.  ``lines`` stays unwrapped: it is
         what the benchmark counts."""
         out = []
         for line in self.lines:
             lead = len(line) - len(line.lstrip(" "))
-            out.extend(textwrap.wrap(line, width, initial_indent=" " * lead,
-                                     subsequent_indent=" " * (lead + 2),
+            out.extend(textwrap.wrap(line.strip(), width,
+                                     initial_indent=" " * lead,
+                                     subsequent_indent=" " * (lead + 2 if lead else 0),
                                      break_on_hyphens=False,
                                      break_long_words=False) or [""])
         return "\n".join(out)
