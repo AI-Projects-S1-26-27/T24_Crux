@@ -418,9 +418,12 @@ in 23 and share at least one in 32.
   (network-bound) ran during part of the planted timing pass. Medians of 5
   sequential runs; solve rate is the primary speed measure, as the proposal
   says.
-- **Crux's message is measured on these instances only**: 18 of the 61 real
-  messages say a version is missing without the reason, because the instances
-  do not carry the data layer's drop reasons (`MESSAGES.md`).
+- **Crux's message says why a version is missing** because the real instances
+  now carry the corpus database's drop reasons (`meta["drops"]`, written by
+  `python -m crux.benchmark.add_drops --db corpus.db --instances
+  benchmarks/corpus/instances.jsonl.gz`; nothing else in the file changes). One
+  real message names a missing version with no reason: the version never existed
+  on PyPI (`MESSAGES.md`).
 - **16 of the 61 reproduced conflicts rest on a version the snapshot
   lacks** (mostly versions with no wheel for CPython 3.12 on Linux x86-64).
   pip and uv agree on them, but they
