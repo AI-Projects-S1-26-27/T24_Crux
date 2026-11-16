@@ -219,6 +219,12 @@ def test_wrapping_keeps_lines_unwrapped_for_counting():
     assert len(out.splitlines()) > len(m.lines) == 2
     assert " ".join(out.split()) == " ".join(m.text.split())
     assert message(p, width=60) == out
+    lines = out.splitlines()
+    assert lines[0].startswith("No solution.")              # headline: no indent
+    assert not lines[1].startswith(" ")                     # headline continues flush left
+    clause = next(i for i, x in enumerate(lines) if x.lstrip().startswith("every"))
+    assert lines[clause].startswith("  every")              # clause: two spaces
+    assert all(x.startswith("    ") for x in lines[clause + 1:])  # continuation: four
 
 
 # ── helpers ─────────────────────────────────────────────────────────────
