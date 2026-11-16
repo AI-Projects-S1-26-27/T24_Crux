@@ -22,6 +22,7 @@ from crux.data.graph import Graph
 
 g = Graph.load("data/crux.db")              # or as_of=aware_datetime
 g = Graph.from_dict({pkg: {ver: [[dep, spec], ...]}})   # for unit tests
+g = Graph.from_dict(d, drops={pkg: [[ver, reason], ...]})  # with drop reasons
 ```
 
 | Call | Returns | Cost |
@@ -32,6 +33,7 @@ g = Graph.from_dict({pkg: {ver: [[dep, spec], ...]}})   # for unit tests
 | `allowed(dep, spec)` | `frozenset[Version]` | same cache as `candidates` |
 | `dependents(dep)` | `tuple[(pkg, Version, SpecifierSet), ...]` | O(all edges) on first call only, then O(1) |
 | `dangling()` | `list[(pkg, Version, dep_name)]` | O(all edges) |
+| `why_missing(dep, spec)` | `tuple[(version_str, reason), ...]`, newest first | one indexed `drops` query per package on first call, then O(1) |
 | `collisions` | `list[(pkg, version_str)]` | attribute |
 | `allowed_misses` | `int`, cache misses so far | attribute |
 
@@ -79,12 +81,18 @@ building workarounds, since some are a few lines to add.
 - **No `requires_python` and no `is_prerelease` on the loaded graph.** Both are
   in the `releases` table. Pre-release status is available for free from the
   `Version` object (`v.is_prerelease`).
-- **No drop reasons.** When your resolver reports "no version of `urllib3`
-  satisfies these constraints", the *reason* a plausible version is absent
-  (`no_wheel`, `py_version`, `yanked`, `after_cutoff`) is in the `drops` table
-  and is not reachable through `Graph`. This is the raw material the
-  explanation module needs, so agree on an interface for it early rather than
-  querying SQL from inside the solver.
+- **Drop reasons are reachable through `why_missing(dep, spec)`.** When
+  `candidates()` is empty, it lists the releases that would have matched
+  and why each is unusable: the `drops` reason code (`no_wheel`, `yanked`,
+  `py_version`, `after_cutoff`, `no_metadata`, ...), `after_as_of` for a
+  release left out by `load(as_of=...)`, or `prerelease` for a pre-release
+  the specifier does not opt into. Only `ingest` and `clean` drops are
+  used (`edge` drops are Requires-Dist lines, not releases), matching
+  includes pre-releases, and invalid versions are never reported. The
+  table is read lazily, so `load()` is unchanged; a database without a
+  `drops` table gives empty results. A dict-built graph knows only what is
+  passed as `drops=`; benchmark instances pass `meta["drops"]` when they
+  carry it (none of the committed ones do yet).
 - **No integer version ids.** If you want bitset domains or a SAT encoding
   later, you will want a dense `(pkg, version) -> int` mapping.
 - **No subset loading.** `Graph.load` reads the whole database eagerly. Fine at

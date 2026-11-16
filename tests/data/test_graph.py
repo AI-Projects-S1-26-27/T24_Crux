@@ -175,3 +175,86 @@ def test_load_unprepared_db_explains_itself(tmp_path):
         assert "crux.data.clean" in str(exc)
     else:
         raise AssertionError("expected RuntimeError")
+
+
+# ── why_missing(): why a matching release is not usable ──────────────
+
+def test_why_missing_from_dict_drops_newest_first():
+    g = Graph.from_dict(
+        {"x": {"1.0": []}},
+        drops={"x": [["1.4.29", "no_wheel"], ["2.0", "yanked"],
+                     ["not a version", "invalid_version"]]})
+    assert g.why_missing("x", "==1.4.29") == (("1.4.29", "no_wheel"),)
+    # 1.0 is usable, so it is not reported; the invalid version never is
+    assert g.why_missing("x", ">=1") == (("2.0", "yanked"),
+                                         ("1.4.29", "no_wheel"))
+    assert g.why_missing("x", "<1") == ()
+    assert g.why_missing("nosuchpkg", "") == ()
+
+
+def test_why_missing_without_drops_reports_only_prereleases():
+    g = Graph.from_dict({"x": {"1.0": [], "2.0": [], "2.1b1": []}})
+    assert g.why_missing("x", ">=1.5") == (("2.1b1", "prerelease"),)
+    # a specifier that names the pre-release opts in, so it is usable
+    assert g.why_missing("x", ">=2.1b1") == ()
+    assert g.why_missing("x", "==3") == ()
+    # packaging accepts a pre-release when no final release matches, so
+    # then it is usable and not reported either
+    only = Graph.from_dict({"x": {"1.0": [], "2.0b1": []}})
+    assert only.why_missing("x", ">=1.5") == ()
+
+
+def test_why_missing_matches_dropped_prereleases_and_canonical_names():
+    g = Graph.from_dict({"zope-interface": {"1.0": []}},
+                        drops={"Zope.Interface": [["2.0rc1", "no_wheel"]]})
+    # 2.0rc1 sorts before 2.0 (PEP 440), so >=1.5 matches it and >=2 does not
+    assert g.why_missing("zope_interface", ">=1.5") == (("2.0rc1", "no_wheel"),)
+    assert g.why_missing("zope_interface", ">=2") == ()
+
+
+def test_why_missing_is_memoized():
+    g = Graph.from_dict({"x": {}}, drops={"x": [["1.0", "yanked"]]})
+    assert g.why_missing("x", ">=1") is g.why_missing("x", SpecifierSet(">=1"))
+
+
+def _db_with_drops(tmp_path):
+    db = tmp_path / "t.db"
+    conn = store.open_db(str(db))
+    _ensure_clean_tables(conn)
+    rel = "INSERT INTO releases VALUES (?, ?, ?, 0, NULL, 'f', 'u', 's')"
+    conn.execute(rel, ("a", "1.0", "2020-01-01T00:00:00Z"))
+    conn.execute(rel, ("a", "2.0", "2024-06-01T00:00:00Z"))
+    conn.execute(rel, ("c", "1.0", "2019-01-01T00:00:00Z"))
+    drop = "INSERT INTO drops VALUES (?, ?, ?, ?, ?)"
+    conn.execute(drop, ("ingest", "no_wheel", "c", "1.5", ""))
+    conn.execute(drop, ("clean", "no_metadata", "c", "1.6", "c-1.6.whl"))
+    # an edge drop is a Requires-Dist line, not a release: never reported
+    conn.execute(drop, ("edge", "extra_dep", "c", "1.7", "x; extra == 'y'"))
+    conn.commit()
+    conn.close()
+    return db
+
+
+def test_why_missing_reads_the_drops_table(tmp_path):
+    g = Graph.load(str(_db_with_drops(tmp_path)))
+    assert g.why_missing("c", ">=1.5") == (("1.6", "no_metadata"),
+                                           ("1.5", "no_wheel"))
+    assert g.why_missing("c", "==1.0") == ()
+    assert g.why_missing("a", ">=2") == ()        # 2.0 is in the graph
+
+
+def test_why_missing_reports_releases_cut_by_as_of(tmp_path):
+    g = Graph.load(str(_db_with_drops(tmp_path)),
+                   as_of=datetime(2023, 1, 1, tzinfo=timezone.utc))
+    assert g.why_missing("a", ">=2") == (("2.0", "after_as_of"),)
+
+
+def test_why_missing_on_a_database_without_drops(tmp_path):
+    db = tmp_path / "old.db"
+    conn = store.open_db(str(db))
+    conn.execute("CREATE TABLE releases (name, version, upload_time)")
+    conn.execute("CREATE TABLE deps (name, version, dep_name, specifier)")
+    conn.execute("INSERT INTO releases VALUES ('a', '1.0', NULL)")
+    conn.commit()
+    conn.close()
+    assert Graph.load(str(db)).why_missing("a", ">=2") == ()

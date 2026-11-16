@@ -8,7 +8,17 @@ from datetime import datetime
 
 from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
-from packaging.version import Version
+from packaging.version import InvalidVersion, Version
+
+
+# why_missing() reasons that are not ingest/clean reason codes (those are in
+# crux.data.config and come straight from the drops table).
+AFTER_AS_OF = "after_as_of"   # in the database, uploaded after load(as_of=...)
+PRERELEASE = "prerelease"     # in the graph, but the specifier does not opt in
+
+# drops-table stages whose rows are whole releases (stage "edge" rows are
+# Requires-Dist lines, not versions).
+_RELEASE_STAGES = ("ingest", "clean")
 
 
 def _as_spec(specifier):
@@ -27,28 +37,42 @@ class Graph:
         self._reverse = None  # dep_name -> tuple[(pkg, Version, SpecifierSet)]
         self.collisions = []  # releases whose version strings compare equal
         self.allowed_misses = 0
+        self._db = None       # database path, for why_missing() lookups
+        self._drops = {}      # pkg -> list[(version_str, reason)], from_dict / cache
+        self._excluded = {}   # pkg -> list[version_str] left out by as_of
+        self._missing = {}    # (pkg, str(spec)) -> why_missing() result
 
     # ── construction ─────────────────────────────────────────────────
 
     @classmethod
-    def from_dict(cls, d):
-        """d = {pkg: {version_str: [[dep_name, spec_str], ...]}}."""
+    def from_dict(cls, d, drops=None):
+        """d = {pkg: {version_str: [[dep_name, spec_str], ...]}}.
+
+        *drops*, optional, is what why_missing() reports for releases that
+        are not in *d*: {pkg: [[version_str, reason], ...]}.  Without it a
+        dict-built graph knows no drop reasons, only pre-releases.
+        """
         rels = [(p, v) for p, vs in d.items() for v in vs]
         edges = [(p, v, dep, spec)
                  for p, vs in d.items() for v, es in vs.items()
                  for dep, spec in es]
-        return cls._build(rels, edges)
+        g = cls._build(rels, edges)
+        for pkg, rows in (drops or {}).items():
+            g._drops.setdefault(canonicalize_name(pkg), []).extend(
+                (str(v), str(r)) for v, r in rows)
+        return g
 
     @classmethod
     def load(cls, db_path, as_of=None):
         """Load releases/deps; drop releases uploaded after *as_of*."""
         conn = sqlite3.connect(db_path)
         try:
-            rels = []
+            rels, excluded = [], []
             for name, ver, ut in conn.execute(
                     "SELECT name, version, upload_time FROM releases"):
                 if as_of is not None and ut and \
                         datetime.fromisoformat(ut) > as_of:
+                    excluded.append((name, ver))
                     continue
                 rels.append((name, ver))
             edges = conn.execute(
@@ -64,7 +88,11 @@ class Graph:
             raise
         finally:
             conn.close()
-        return cls._build(rels, edges)
+        g = cls._build(rels, edges)
+        g._db = str(db_path)
+        for name, ver in excluded:
+            g._excluded.setdefault(canonicalize_name(name), []).append(ver)
+        return g
 
     @classmethod
     def _build(cls, rels, edges):
@@ -162,6 +190,69 @@ class Graph:
                     rev.setdefault(dep, []).append((pkg, v, spec))
             self._reverse = {k: tuple(val) for k, val in rev.items()}
         return self._reverse.get(canonicalize_name(dep_name), ())
+
+    def why_missing(self, dep_name, specifier):
+        """Releases of *dep_name* that match *specifier* but that the solver
+        cannot use, each with the reason.
+
+        Returns a tuple of (version_str, reason), newest first.  This is what
+        an explanation needs when candidates() is empty: whether the version
+        asked for was dropped (``no_wheel``, ``yanked``, ``py_version``,
+        ``after_cutoff``, ``no_metadata`` and the other reason codes in
+        crux.data.config), uploaded after the ``as_of`` the graph was loaded
+        with (``after_as_of``), or is a pre-release the specifier does not
+        opt into (``prerelease``).  An empty result means no such release
+        is known at all.
+
+        Matching includes pre-releases, so a dropped ``2.0rc1`` is reported
+        for ``>=2``.  Versions that are not valid PEP 440 (reason
+        ``invalid_version``) cannot be compared and are never reported.
+        For a loaded graph the drops table is read on first use per package
+        (indexed), so load() is unaffected; results are memoized.
+        """
+        dep_name = canonicalize_name(dep_name)
+        specifier = _as_spec(specifier)
+        key = (dep_name, str(specifier))
+        hit = self._missing.get(key)
+        if hit is not None:
+            return hit
+        rows = set(self._drop_rows(dep_name))
+        rows |= {(v, AFTER_AS_OF) for v in self._excluded.get(dep_name, ())}
+        usable = self.allowed(dep_name, specifier)
+        rows |= {(str(v), PRERELEASE) for v in self.versions(dep_name)
+                 if v.is_prerelease and v not in usable}
+        out = []
+        for ver, reason in rows:
+            try:
+                v = Version(ver)
+            except InvalidVersion:
+                continue
+            # explicit, so a dropped pre-release is reported whatever
+            # packaging's default for contains() is (26.0 already says yes)
+            if specifier.contains(v, prereleases=True):
+                out.append((v, ver, reason))
+        out.sort(key=lambda x: (x[0], x[2]), reverse=True)
+        hit = self._missing[key] = tuple((ver, r) for _, ver, r in out)
+        return hit
+
+    def _drop_rows(self, pkg):
+        if pkg in self._drops or self._db is None:
+            return self._drops.get(pkg, [])
+        conn = sqlite3.connect(f"file:{self._db}?mode=ro", uri=True)
+        try:
+            marks = ",".join("?" * len(_RELEASE_STAGES))
+            rows = conn.execute(
+                "SELECT version, reason FROM drops"
+                f" WHERE stage IN ({marks}) AND name = ?",
+                (*_RELEASE_STAGES, pkg)).fetchall()
+        except sqlite3.OperationalError as exc:
+            if "no such table" not in str(exc):
+                raise
+            rows = []
+        finally:
+            conn.close()
+        self._drops[pkg] = [(v, r) for v, r in rows if v is not None]
+        return self._drops[pkg]
 
     def dangling(self):
         return [(pkg, v, dep)

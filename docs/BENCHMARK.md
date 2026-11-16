@@ -25,8 +25,10 @@ the real conflicts, where no answer is known, it checks the extracted cores
 with the independent verifier and proves whether each is the only minimal
 core.
 
-It does not measure Crux's *message*: the English renderer (Parth Gupta) is
-not built yet. Crux is compared on answers, time and the conflict it
+Crux's *message* (the English renderer, `crux.explain.render`) is measured
+separately, against pip's and uv's saved messages, by
+`python -m crux.benchmark.crux_messages`: results in
+`benchmarks/results/MESSAGES.md`. Here, Crux is compared on answers, time and the conflict it
 reports.
 
 ## Quick start
@@ -395,7 +397,7 @@ in 23 and share at least one in 32.
 | Time within 3x of pip's median *on satisfiable cases* | **Not measured here**: every benchmark instance is unsatisfiable. On these, Crux's median is below pip's (0.08 vs 0.34 s planted; 0.20 vs 0.41 s real), but its 95th percentile on real conflicts is about 10x pip's |
 | Core minimality 100%, exact match on 95% of planted | **Met**: planted 198/198 exact for deletion, deletion+refine and QuickXplain, also starting from every constraint; real 61/61 confirmed minimal by the independent verifier |
 | Jaccard >= 0.8 on real cores | **Not measured as specified** (no hand annotation). Instead: 36 of 61 real cores are proven the only minimal core, so a correct annotation must equal them; on the other 25 the extractor returns one of several valid cores |
-| Message size at most half of pip's | **Crux's message is not built.** Baselines measured: uv's median is 6 lines and pip 26.2.1's 10 on real conflicts |
+| Message size at most half of pip's | **Met** (`MESSAGES.md`): on real conflicts Crux's median is 4 lines and 24 words against pip 26.2.1's 10 and 79 (uv: 6 and 40); on planted, 4 and 31 against 11 and 83. Crux printed wrapped at 80 columns. Not met if pip's fixed advice block is left out of pip's count (Crux is then 55 to 67% of pip) |
 | User study | **Not run.** `messages.jsonl` holds every pip and uv message for it, `benchmarks/results/cores/real_cores.jsonl` every real core |
 
 
@@ -416,7 +418,12 @@ in 23 and share at least one in 32.
   (network-bound) ran during part of the planted timing pass. Medians of 5
   sequential runs; solve rate is the primary speed measure, as the proposal
   says.
-- **Crux's message is not measured**: the renderer does not exist yet.
+- **Crux's message says why a version is missing** because the real instances
+  now carry the corpus database's drop reasons (`meta["drops"]`, written by
+  `python -m crux.benchmark.add_drops --db corpus.db --instances
+  benchmarks/corpus/instances.jsonl.gz`; nothing else in the file changes). One
+  real message names a missing version with no reason: the version never existed
+  on PyPI (`MESSAGES.md`).
 - **16 of the 61 reproduced conflicts rest on a version the snapshot
   lacks** (mostly versions with no wheel for CPython 3.12 on Linux x86-64).
   pip and uv agree on them, but they
