@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading dependency errors: a short study</title>
+<style>
+  :root { --ink: #1d1d1f; --muted: #5f6368; --line: #d9d9de; --accent: #2457c5;
+          --bg: #fafafa; --term: #16181d; --term-ink: #e6e6e6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+         color: var(--ink); background: var(--bg); }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1 { font-size: 24px; margin: 0 0 16px; }
+  h2 { font-size: 18px; margin: 24px 0 8px; }
+  p, li { max-width: 70ch; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .progress { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+  .box { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+         padding: 12px 16px; margin: 12px 0; }
+  .label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+           color: var(--muted); margin-bottom: 6px; }
+  pre { margin: 0; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        white-space: pre; overflow-x: auto; }
+  .term { background: var(--term); color: var(--term-ink); border-radius: 8px;
+          padding: 14px 16px; margin: 12px 0; }
+  fieldset { border: 0; padding: 0; margin: 16px 0; }
+  legend { font-weight: 600; margin-bottom: 8px; }
+  label.opt { display: block; padding: 8px 12px; margin: 6px 0; border: 1px solid var(--line);
+              border-radius: 6px; background: #fff; cursor: pointer; }
+  label.opt:hover { border-color: var(--accent); }
+  label.opt input { margin-right: 8px; }
+  code.opt { font: 14px ui-monospace, Menlo, Consolas, monospace; }
+  button { font: inherit; padding: 10px 20px; border-radius: 6px; border: 0;
+           background: var(--accent); color: #fff; cursor: pointer; margin-top: 8px; }
+  button:disabled { background: #9db0dc; cursor: default; }
+  button.secondary { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  input[type=number] { font: inherit; padding: 8px; width: 8em; }
+  .feedback { background: #eef3ff; border-left: 4px solid var(--accent); padding: 10px 14px;
+              margin: 12px 0; }
+  textarea { width: 100%; height: 220px; font: 12px ui-monospace, Menlo, monospace; }
+  .error { color: #b3261e; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const DATA = /*DATA*/null;
+const app = document.getElementById("app");
+const NONE = "I can't tell";
+const STORE = "crux-study-v1";
+const state = { participant: null, background: {}, responses: [],
+                started: new Date().toISOString(), version: "v1" };
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v; else if (k === "html") e.innerHTML = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  for (const kid of kids) e.append(kid instanceof Node ? kid : document.createTextNode(kid));
+  return e;
+}
+function screen(...kids) { app.replaceChildren(...kids); window.scrollTo(0, 0); }
+function save() { try { localStorage.setItem(STORE + "-p" + state.participant, JSON.stringify(state)); } catch (e) {} }
+
+function choice(name, options, onChange) {
+  const fs = el("fieldset");
+  for (const o of options) {
+    const input = el("input", { type: "radio", name, value: o, onchange: () => onChange(o) });
+    fs.append(el("label", { class: "opt" }, input, el("code", { class: "opt" }, o)));
+  }
+  return fs;
+}
+
+function conflictView(item, style) {
+  return [
+    el("div", { class: "box" }, el("div", { class: "label" }, "requirements.txt"),
+       el("pre", {}, item.requirements.join("\n"))),
+    el("div", { class: "label" }, "Installing these requirements fails. The installer prints:"),
+    el("div", { class: "term" }, el("pre", {}, item.messages[style])),
+  ];
+}
+
+// ── 1. welcome and consent ───────────────────────────────────────────
+function welcome() {
+  const num = el("input", { type: "number", min: 1, max: maxParticipant(), id: "pnum" });
+  const err = el("p", { class: "error" });
+  screen(
+    el("h1", {}, "Reading dependency errors"),
+    el("p", {}, "When pip cannot install a set of packages, it prints an error. We want to know " +
+       "which kind of error message helps people find the cause fastest."),
+    el("p", {}, "You will see 8 installation errors. For each, pick the requirement you would " +
+       "change, and sometimes the package the conflict is about. It takes about 15 minutes. " +
+       "Please answer as quickly as you can while trying to be right."),
+    el("p", {}, "Taking part is voluntary and you can stop at any time. We record only your " +
+       "answers, how long they took and two questions about your pip experience: no name, " +
+       "email or other personal data. Results are reported only in aggregate."),
+    el("p", {}, "Participant number (given to you by the study runner):"), num, err,
+    el("div", {}, el("button", { onclick: () => {
+      const n = parseInt(num.value, 10);
+      if (!(n >= 1 && n <= maxParticipant())) { err.textContent = "Enter a number from 1 to " + maxParticipant() + "."; return; }
+      state.participant = n; background();
+    } }, "I agree, start")));
+}
+function maxParticipant() { return Math.max(...DATA.assignments.map(a => a.participant)); }
+
+// ── 2. background ────────────────────────────────────────────────────
+function background() {
+  const b = state.background;
+  const go = el("button", { disabled: true, onclick: practiceIntro }, "Continue");
+  const check = () => { go.disabled = !(b.pip_use && b.seen_conflict); };
+  screen(el("h1", {}, "Two questions about you"),
+    el("fieldset", {}, el("legend", {}, "How often do you use pip?"),
+       choice("pip_use", ["Never or almost never", "A few times a year", "Monthly", "Weekly or more"],
+              v => { b.pip_use = v; check(); })),
+    el("fieldset", {}, el("legend", {}, "Have you ever had to fix a pip dependency conflict (ResolutionImpossible)?"),
+       choice("seen", ["Yes", "No", "Not sure"], v => { b.seen_conflict = v; check(); })),
+    go);
+}
+
+// ── 3. practice: one conflict in each of the three styles ────────────
+function practiceIntro() {
+  screen(el("h1", {}, "Practice"),
+    el("p", {}, "First, one practice conflict, shown three times with three different " +
+       "error messages so you see each kind once. These answers are not scored, and " +
+       "you will be shown the right answer."),
+    el("button", { onclick: () => practice(0) }, "Start practice"));
+}
+function practice(k) {
+  const it = DATA.practice, style = ["pip", "uv", "crux"][k];
+  let picked = null;
+  const next = el("button", { disabled: true, onclick: () => {
+    next.replaceWith(el("div", { class: "feedback" },
+      `Right answer: ${it.q1_correct.join(" or ")}. ` +
+      `The conflict is about ${it.q2_correct.join(", ")}: ` +
+      "no version of it satisfies every package that needs it."),
+      el("button", { onclick: () => k < 2 ? practice(k + 1) : realIntro() }, "Next"));
+  } }, "Check");
+  screen(el("div", { class: "progress" }, `Practice, message ${k + 1} of 3`),
+    ...conflictView(it, style),
+    el("fieldset", {}, el("legend", {}, "Which of these requirements would you change to fix it?"),
+       choice("pq1", [...it.q1_options, NONE], v => { picked = v; next.disabled = false; })),
+    next);
+}
+
+// ── 4. the 8 scored conflicts ────────────────────────────────────────
+function realIntro() {
+  screen(el("h1", {}, "The real questions"),
+    el("p", {}, "Now 8 conflicts. You will not be told the answers. The time you take is " +
+       "recorded from the moment each error appears, so please do not pause in the middle " +
+       "of a question; take breaks between questions instead."),
+    el("button", { onclick: () => trial(0) }, "Start"));
+}
+function myTrials() {
+  return DATA.assignments.filter(a => a.participant === state.participant)
+    .sort((a, b) => a.position - b.position);
+}
+function trial(i) {
+  const trials = myTrials();
+  if (i >= trials.length) return done();
+  const a = trials[i], it = DATA.items.find(x => x.id === a.item);
+  const rec = { participant: a.participant, group: a.group, position: a.position,
+                item: a.item, style: a.style, q1: null, q1_ms: null, q2: null, q2_ms: null };
+  const t0 = performance.now();
+  let q1 = null, q2 = null, t1 = null;
+  const q2box = el("div");
+  const next1 = el("button", { disabled: true, onclick: () => {
+    t1 = performance.now(); rec.q1 = q1; rec.q1_ms = Math.round(t1 - t0);
+    next1.remove(); q1fs.querySelectorAll("input").forEach(x => x.disabled = true);
+    if (!it.q2_options.length) return finish();
+    const next2 = el("button", { disabled: true, onclick: () => {
+      rec.q2 = q2; rec.q2_ms = Math.round(performance.now() - t1); finish(); } }, "Next");
+    q2box.append(el("fieldset", {}, el("legend", {}, "Which package is the conflict about?"),
+      el("p", { class: "muted" }, "The package for which no version satisfies everything that needs it."),
+      choice("q2", [...it.q2_options, NONE], v => { q2 = v; next2.disabled = false; })), next2);
+  } }, "Next");
+  const q1fs = el("fieldset", {}, el("legend", {}, "Which of these requirements would you change to fix it?"),
+    choice("q1", [...it.q1_options, NONE], v => { q1 = v; next1.disabled = false; }));
+  function finish() { state.responses.push(rec); save(); trial(i + 1); }
+  screen(el("div", { class: "progress" }, `Question ${i + 1} of ${trials.length}`),
+    ...conflictView(it, a.style), q1fs, next1, q2box);
+}
+
+// ── 5. end: hand the answers back ────────────────────────────────────
+function done() {
+  state.finished = new Date().toISOString(); save();
+  const text = JSON.stringify(state, null, 1);
+  const name = `crux-study-p${String(state.participant).padStart(2, "0")}.json`;
+  screen(el("h1", {}, "Thank you!"),
+    el("p", {}, "That's all. Please don't close this page: the study runner will save your answers."),
+    el("button", { onclick: () => {
+      const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      const a = el("a", { href: url, download: name }); document.body.append(a); a.click(); a.remove();
+    } }, "Download answers (" + name + ")"),
+    el("button", { class: "secondary", onclick: async () => {
+      try { await navigator.clipboard.writeText(text); } catch (e) {}
+    } }, "Copy answers"),
+    el("h2", {}, "Answers"), el("textarea", { readonly: "" }, text));
+}
+
+if (!DATA) app.textContent = "No study data: generate this page with python -m crux.benchmark.study.";
+else welcome();
+</script>
+</body>
+</html>
