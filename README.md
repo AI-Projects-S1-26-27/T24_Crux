@@ -137,6 +137,38 @@ should go through `candidates()` everywhere rather than mixing the two. Because
 entry. `collisions` lists releases whose version strings are different but
 PEP 440-equal (see `docs/HANDOVER.md`); it should always be empty.
 
+### Why a version is missing
+
+When `candidates()` is empty, `why_missing(dep, spec)` lists the releases that
+would have matched and why each one cannot be used: the `drops` table's reason
+(`no_wheel`, `yanked`, `py_version`, `after_cutoff`, ...), `after_as_of` for a
+release left out by `load(as_of=...)`, or `prerelease` for a pre-release the
+specifier does not opt into. A loaded graph reads `drops` lazily; a dict-built
+graph knows only what is passed as `drops=`. This is what lets an error message
+say *why* (`docs/RENDER.md` 4.4).
+
+```bash
+python - <<'EOF'
+from crux.data.graph import Graph
+
+g = Graph.from_dict(
+    {"app": {"1.0": [["lib", "==1.4"]]}, "lib": {"2.0": [], "2.1b1": []}},
+    drops={"lib": [["1.4", "no_wheel"], ["1.3", "yanked"]]},
+)
+print(g.candidates("lib", "==1.4"))
+print(g.why_missing("lib", "==1.4"))
+print(g.why_missing("lib", ">=1.3"))
+EOF
+```
+
+Output:
+
+```
+()
+(('1.4', 'no_wheel'),)
+(('2.1b1', 'prerelease'), ('1.4', 'no_wheel'), ('1.3', 'yanked'))
+```
+
 `versions()` is newest first (`[]` if unknown). `allowed()` uses packaging's default pre-release
 rule and is cached by `(dep, str(spec))`. Edges to a package with no versions (here `requestes`,
 a typo in someone's metadata) are kept, and `allowed()` returns `frozenset()`.
@@ -229,13 +261,49 @@ Owner: Arrya Sridhar. Method in `docs/BENCHMARK.md`, every number in
   (`crux.explain`) scored against the planted cores, and checked on the real
   conflicts (`benchmarks/results/cores/`).
 
+## Explanation messages and the user study
+
+Owner: Parth Gupta. Everything is in `docs/RENDER.md`.
+
+- `crux.explain.message(problem)` solves a problem and, when it has no solution, explains it in a
+  few lines: which of your requirements cannot hold together, where they collide, and why no
+  version gets past the collision. It is built from the minimal core (`crux.explain`).
+- `python -m crux.benchmark.crux_messages`: Crux's messages on the 198 planted and 61 real
+  conflicts, measured with the same code as pip's and uv's (`benchmarks/results/MESSAGES.md`).
+  On real conflicts the median message is 4 lines and 24 words, against pip 26.2.1's 10 and 79
+  and uv's 6 and 40.
+- `benchmarks/ideal/`: 30 hand-written ideal explanations, every fact checked against the data;
+  `python -m crux.explain.ideal` compares the renderer with them.
+- `study/`: the user study (protocol, items, a self-contained form) and
+  `python -m crux.benchmark.study_analysis` for its analysis. Designed and tested; not run yet.
+
+```bash
+python - <<'EOF'
+from crux.data.graph import Graph
+from crux.resolver import Problem
+from crux.explain import message
+
+g = Graph.from_dict({"a": {"1.0": [["c", "<2.0"]]}, "b": {"1.0": [["c", ">=3.1"]]},
+                     "c": {"1.0": [], "3.1": []}})
+print(message(Problem.from_requirements(g, ["a", "b"]), width=80))
+EOF
+```
+
+Output:
+
+```
+No solution. Your requirements a and b cannot both hold:
+  the only allowed version of a (1.0) needs c<2.0, but the only allowed version
+    of b (1.0) needs c>=3.1.
+```
+
 ## Running tests
 
 ```bash
 python -m pytest -q
 ```
 
-111 tests, all offline (`httpx.MockTransport`; in-memory or temp-file DBs; fixtures in `tests/fixtures/`).
+1,564 tests, all offline (`httpx.MockTransport`; in-memory or temp-file DBs; fixtures in `tests/fixtures/`).
 
 ## Layout
 
@@ -249,12 +317,16 @@ crux/data/parse.py       pure parsing: metadata, Requires-Dist, requires-python,
 crux/data/clean.py       files + raw -> releases, deps, drops (CLI)
 crux/data/graph.py       Graph API for the solver (CLI prints load stats)
 crux/data/qa.py          SQL checks over the cleaned DB (CLI)
-crux/benchmark/          planted generator, real-failure corpus, pip/uv/Crux harness, report
-benchmarks/              planted instances, corpus, committed results and figures
-tests/data/              acceptance tests, one file per module
+crux/resolver/           CSP solver: C0 to C4, oracle, plan checker
+crux/explain/            minimal cores, grouping, the English renderer, ideal-explanation check
+crux/benchmark/          planted generator, real-failure corpus, pip/uv/Crux harness, report,
+                         Crux's messages, drop reasons, user study and its analysis
+benchmarks/              planted instances, corpus, ideal explanations, committed results and figures
+study/                   user study: protocol, items, assignments, form
+tests/                   tests by component (data, resolver, explain, benchmark)
 tests/fixtures/          offline fixtures
 scripts/                 throwaway spike scripts (spike.py, spike2.py)
 snapshots/               seed list for the snapshot
-docs/                    SCOPE, SPIKE, PROGRESS, PILOT, HANDOVER
+docs/                    SCOPE, SPIKE, PROGRESS, PILOT, HANDOVER, EXPLAIN, BENCHMARK, RENDER
 data/                    local DB (gitignored)
 ```
