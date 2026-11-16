@@ -107,6 +107,25 @@ same requirements file.
 - **Background** (asked in the form, not used to exclude): how often they use pip, and
   whether they have ever fixed a pip dependency conflict.
 
+**Power, estimated by simulation before any data** (`python -m crux.benchmark.study_analysis
+--power 12,18,24,36`, 200 simulated studies each). This assumes Crux's messages are read 40%
+faster than pip's and that accuracy is 95% / 90% (Crux, real / planted) against pip's
+90% / 55%. These are guesses, not findings. Under them, the share of studies in which each
+hypothesis comes out supported is:
+
+| participants | H1 (time) | H2 (accuracy) |
+|---|---|---|
+| 12 | 89% | 24% |
+| 18 | 93% | 51% |
+| 24 | 97% | 71% |
+| 36 | 98% | 85% |
+
+So H1 is well powered at 18 participants, but H2 is close to a coin flip even if the effect is
+real. If recruitment allows, 24 participants (still a multiple of 3) gives H2 a fair chance. With
+fewer than 24, a "not supported" H2 must be reported as inconclusive, not as evidence of no
+difference. When there is no real difference, the analysis supports either hypothesis in at most
+10% of simulated studies (`tests/benchmark/test_study_analysis.py`).
+
 ## 5. Procedure
 
 1. In person, one participant at a time, on the study laptop with `study/form.html`
@@ -169,8 +188,12 @@ This is fixed now; the analysis code is task 6 and must follow it.
 - Practice answers are never analysed.
 - Every exclusion is counted in the report.
 
-**Power:** with 16 to 18 participants, only large effects can be detected. The report says so,
-and gives the effect sizes with the paired differences, not only p-values.
+**Power:** with 16 to 18 participants, only large effects can be detected (section 4). The report
+says so, and gives the effect sizes with the paired differences, not only p-values.
+
+**Code:** `crux/benchmark/study_analysis.py`. The exact Wilcoxon test (average ranks for ties,
+zeros dropped, exact null distribution) matches enumeration of every sign pattern, and scipy's
+exact test where there are no ties.
 
 ## 8. Threats to validity (for the report)
 
@@ -212,5 +235,20 @@ python -m crux.benchmark.study --participants 18 --out study
 open study/form.html                          # one session per participant
 ```
 
-`python -m pytest tests/benchmark/test_study.py` checks that the items follow the rule, every
-answer key matches the data, the Latin square is balanced, and the form contains no answers.
+Analysis, once the response files are in `study/responses/`:
+
+```bash
+python -m crux.benchmark.study_analysis --responses study/responses
+#   -> study/RESULTS.md (the report) and study/RESULTS.csv (one scored row per answer)
+
+# before there is data: exercise the pipeline on made-up participants
+python -m crux.benchmark.study_analysis --simulate 18 --responses study/simulated
+#   -> study/RESULTS_SIMULATED.md, marked SIMULATED at the top; never written into study/responses
+```
+
+`python -m pytest tests/benchmark/test_study.py tests/benchmark/test_study_analysis.py` checks that:
+- the items follow the rule;
+- every answer key matches the data;
+- the Latin square is balanced;
+- the form contains no answers;
+- the analysis finds a built-in effect and does not invent one.
