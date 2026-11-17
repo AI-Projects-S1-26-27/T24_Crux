@@ -297,13 +297,56 @@ No solution. Your requirements a and b cannot both hold:
     of b (1.0) needs c>=3.1.
 ```
 
+## Command line
+
+`pip install -e .` installs a `crux` command; `python -m crux` is the same thing.
+`crux resolve` takes requirements, finds one version of every package they need,
+and prints the plan. If there is no plan, it prints the short explanation
+from `crux.explain.message`, the same text the benchmark measures.
+
+```bash
+crux resolve "requests>=2.30" "urllib3<2"            # against data/crux.db
+crux resolve a b --graph tests/fixtures/toy_abc.json # a JSON graph, no database needed
+crux resolve --instance benchmarks/corpus/instances.jsonl.gz       # list the 61 real conflicts
+crux resolve --instance benchmarks/corpus/instances.jsonl.gz --id 'real/AgileRL/AgileRL#234'
+```
+
+On the toy graph, `crux resolve a --graph tests/fixtures/toy_abc.json` prints the plan
+`a==1.4` and `c==1.2`, one `name==version` per line, so the output can be redirected
+into a `requirements.txt`. `crux resolve a b --graph tests/fixtures/toy_abc.json` prints:
+
+```
+No solution. Your requirements a and b cannot both hold:
+  every allowed version of a (1.0 to 1.4, 5 releases) needs c<2.0, but every
+    allowed version of b (1.0 to 1.3, 4 releases) needs c>=3.1.
+```
+
+| Option | Meaning |
+|---|---|
+| `REQ ...` | requirements such as `"flask>=3"`; extras, markers and URLs are rejected (`docs/SCOPE.md`) |
+| `--db PATH` | snapshot database (default `data/crux.db`, built by `run_ingest` and `clean`) |
+| `--graph FILE` | a JSON graph in `Graph.from_dict` format instead of the database |
+| `--instance FILE [--id ID]` | a benchmark instance (planted or real); without `--id`, lists the ids. With `REQ`s, they replace the instance's own request |
+| `--config NAME` | `C0` to `C4`, or `C4-noLCV` (default: AC-3, MRV and learning, newest versions first) |
+| `--timeout SECONDS` | search time limit (default 60) |
+| `--width N` | wrap the explanation at N columns (default 80; 0 = no wrapping) |
+| `--stats` | nodes, backtracks, backjumps, AC-3 pruning and time, on stderr |
+
+Exit codes: `0` resolved, `1` no solution, `2` bad input, `3` timeout. The plan or
+the explanation goes to stdout; statistics and errors go to stderr.
+
+On all 259 benchmark instances (198 planted, 61 real) the exit code matches the
+known answer and the text equals `message(problem, width=80)`. The median run takes
+0.1 s; the largest real graphs take 17 to 50 s, nearly all of it in core extraction
+(`real/khoj-ai/khoj#1224` is the slowest).
+
 ## Running tests
 
 ```bash
 python -m pytest -q
 ```
 
-1,564 tests, all offline (`httpx.MockTransport`; in-memory or temp-file DBs; fixtures in `tests/fixtures/`).
+1,595 tests, all offline (`httpx.MockTransport`; in-memory or temp-file DBs; fixtures in `tests/fixtures/`).
 
 ## Layout
 
@@ -317,6 +360,7 @@ crux/data/parse.py       pure parsing: metadata, Requires-Dist, requires-python,
 crux/data/clean.py       files + raw -> releases, deps, drops (CLI)
 crux/data/graph.py       Graph API for the solver (CLI prints load stats)
 crux/data/qa.py          SQL checks over the cleaned DB (CLI)
+crux/cli.py              the `crux` command (`crux resolve`); crux/__main__.py for python -m crux
 crux/resolver/           CSP solver: C0 to C4, oracle, plan checker
 crux/explain/            minimal cores, grouping, the English renderer, ideal-explanation check
 crux/benchmark/          planted generator, real-failure corpus, pip/uv/Crux harness, report,
