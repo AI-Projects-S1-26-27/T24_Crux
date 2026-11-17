@@ -11,6 +11,10 @@ dependencies = [
 dev = ["pytest>=8"]
 plots = ["matplotlib>=3.8"]     # only for crux.resolver.ablation's figures
 
+# `pip install -e .` puts a `crux` command on PATH that calls crux.cli.main
+[project.scripts]
+crux = "crux.cli:main"
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
