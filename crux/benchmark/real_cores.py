@@ -32,8 +32,7 @@ ground truth, so this measures what can be proven instead.  Per instance:
    that no snapshot release meets; with ``--db`` (the corpus database) the
    drop reasons of the PyPI versions they ask for are looked up.
 
-Cores are written in full (``real_cores.jsonl``) for the renderer and the
-user study.
+Cores are written in full (``real_cores.jsonl``) for the renderer.
 
     python -m crux.benchmark.real_cores \\
         --instances benchmarks/corpus/instances.jsonl.gz \\

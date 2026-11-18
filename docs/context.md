@@ -57,7 +57,7 @@ and nothing is committed yet (see section 3).
    work (docs/BENCHMARK.md): 61 real conflicts reproduced from GitHub issues; every
    configuration answers UNSAT where it finishes, agreeing with pip and uv on all 61.
 5. `Graph.allowed()` costs about 4.6 s cold on `boto3` (data team's module).
-6. Explanation module, pip/uv comparison, user study, CLI belong to other members.
+6. Explanation module, pip/uv comparison, CLI belong to other members.
 7. LCV picks very old, dependency-free releases on real data (section 6.3): decide
    whether the recommended configuration should drop LCV.
 
@@ -107,7 +107,7 @@ From the project proposal: eight members, four components.
 | **Resolver engine** | **Jas Simar Kaur** | AC-3 (C1), brute-force oracle, plan checker, correctness tests |
 | **Resolver engine** | **Parth Sureka** | MRV (C2), LCV (C3), ablation experiment |
 | Explanation | Yash Kejriwal | Core extraction (deletion, QuickXplain), minimality verifier |
-| Explanation | Parth Gupta | English renderer, ideal explanations, user study |
+| Explanation | Parth Gupta | English renderer, ideal explanations |
 | Benchmarking | Arrya Sridhar | Hard-case corpus, planted-conflict generator, pip/uv harness, plots |
 
 All three resolver-engine roles were worked together in one session. "Owns" says who
@@ -150,7 +150,7 @@ disclosure are due **18 Nov 2026**; live demo and individual viva on **21 Nov 20
 | One declared track, unchanged | Application, unchanged |
 | Commit history across the semester | **Off track.** 18 commits, all between 2026-11-08 and 2026-11-12, all on the data layer. No commits from Aahana, Jas Simar, Parth Sureka, Yash, Parth Gupta or Arrya. The resolver is uncommitted. The proposal promised weekly commits from week 1 |
 | Viva readiness | **Not prepared.** Each owner must study their component and be able to explain it |
-| Realistic data (Application track) | Partly: the real pilot graph is benchmarked (6.3). No hard real conflicts, no user study, no pip/uv comparison yet |
+| Realistic data (Application track) | Partly: the real pilot graph is benchmarked (6.3). No hard real conflicts, no pip/uv comparison yet |
 | Code reproducibility and consistency | README is stale (says 111 tests, does not describe the resolver); `snapshots/` is not committed; no LICENSE or CI |
 | Citations | The proposal's references were not verified by us; each author should check theirs |
 
@@ -633,15 +633,14 @@ harness and the real corpus).
   Two findings for the resolver team in `docs/EXPLAIN.md` section 9: the C4 preset's conflict
   is inflated by AC-3's justifications, and `learning.py` `_explain` costs about 8 s per
   solve on the real boto3/botocore conflict when AC-3 is off (98% of the time in a profile).
-- Parth Gupta: the English renderer over `crux.explain.explain(problem).core`, the user study.
+- Parth Gupta: the English renderer over `crux.explain.explain(problem).core`.
 - Arrya: done (docs/BENCHMARK.md): 198 planted instances with proven unique cores
   (`benchmarks/planted/`), 61 reproduced real conflicts (`benchmarks/corpus/`), the pip/uv/Crux
   harness and its results. Core extraction (`crux.explain`) scored against the planted cores:
   exact on 198/198 for all three methods. On the 61 real conflicts its cores are all verified
   minimal, 36 are proven the only minimal core, and 45 of 61 are conflicts among releases that
   exist (16 rest on a version the snapshot lacks); `benchmarks/results/cores/real_cores.jsonl`
-  has every real core. Open: Crux's message once the renderer exists; the user study can draw
-  on `benchmarks/results/*/messages.jsonl` and `real_cores.jsonl`.
+  has every real core. Open: Crux's message once the renderer exists.
 - Ritika and Sumehra: a `==X` fast path in `Graph.allowed()` (about 4.6 s cold on `boto3`);
   the full 5,000-seed run (about 6.5 h) after deciding the JSON-fallback question (old wheels
   stored as zero dependencies; it changes the dataset); confirm and commit `snapshots/`

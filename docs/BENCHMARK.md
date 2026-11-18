@@ -398,7 +398,6 @@ in 23 and share at least one in 32.
 | Core minimality 100%, exact match on 95% of planted | **Met**: planted 198/198 exact for deletion, deletion+refine and QuickXplain, also starting from every constraint; real 61/61 confirmed minimal by the independent verifier |
 | Jaccard >= 0.8 on real cores | **Not measured as specified** (no hand annotation). Instead: 36 of 61 real cores are proven the only minimal core, so a correct annotation must equal them; on the other 25 the extractor returns one of several valid cores |
 | Message size at most half of pip's | **Met** (`MESSAGES.md`): on real conflicts Crux's median is 4 lines and 24 words against pip 26.2.1's 10 and 79 (uv: 6 and 40); on planted, 4 and 31 against 11 and 83. Crux printed wrapped at 80 columns. Not met if pip's fixed advice block is left out of pip's count (Crux is then 55 to 67% of pip) |
-| User study | **Not run.** `messages.jsonl` holds every pip and uv message for it, `benchmarks/results/cores/real_cores.jsonl` every real core |
 
 
 
