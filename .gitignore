@@ -22,7 +22,3 @@ Thumbs.db
 
 # benchmark output
 /results/
-
-# user study: simulated participants are for testing the analysis only
-/study/simulated/
-/study/RESULTS_SIMULATED.*
