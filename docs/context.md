@@ -420,7 +420,7 @@ every package involved. On `thrash_wide` it is **exactly 8 constraints at any si
 in 64, never larger. If AC-3 deleted a version the refutation relied on, all of AC-3's
 `used` constraints are added (coarse but sound). This is the input for core extraction.
 
-*Clarification (Yash, 2026-11-15, `docs/EXPLAIN.md` 4.4):* the "2.0 (C4)" figure is for
+*Clarification (Yash, 2026-11-15, `docs/EXPLAIN.md` 5.4):* the "2.0 (C4)" figure is for
 **learning alone** (`Config(learning=True)`, as in `test_learning.py`), not the C4 preset.
 With AC-3 on, the AC-3 rule above applies often: on the 215 UNSAT instances among
 `random_problem` seeds 0 to 299 the C4 preset's conflict has mean 10.3 constraints (C0 5.6,
@@ -630,7 +630,7 @@ harness and the real corpus).
 
 **Other teams**
 - Yash: core extraction and the verifier are **done** (`crux/explain/`, `docs/EXPLAIN.md`).
-  Two findings for the resolver team in `docs/EXPLAIN.md` section 9: the C4 preset's conflict
+  Two findings for the resolver team in `docs/EXPLAIN.md` section 10: the C4 preset's conflict
   is inflated by AC-3's justifications, and `learning.py` `_explain` costs about 8 s per
   solve on the real boto3/botocore conflict when AC-3 is off (98% of the time in a profile).
 - Parth Gupta: the English renderer over `crux.explain.explain(problem).core`.

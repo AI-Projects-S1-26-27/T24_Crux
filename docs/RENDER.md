@@ -149,7 +149,7 @@ A core has one constraint per release, so it is grouped (`group_core`):
 - one group per (package, dependency) pair of edges, **whatever their specifiers**.
 
 Grouping by identical specifier would compress nothing on the boto3 conflict, where each of the
-430 releases needs a different botocore range (`docs/EXPLAIN.md` 7.3). Instead the ranges are
+430 releases needs a different botocore range (`docs/EXPLAIN.md` 8.3). Instead the ranges are
 summarised: `range` is the smallest single range containing them all, written with lower bounds
 first (`>=1.0,<2.0`, not packaging's sorted `<2.0,>=1.0`).
 
