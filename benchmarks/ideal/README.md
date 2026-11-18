@@ -2,8 +2,7 @@
 
 `ideal.jsonl` holds 30 hand-written messages: what a developer should ideally
 read for each conflict. They are the target the renderer is compared against
-(`python -m crux.explain.ideal`) and the source of ground truth for the user
-study.
+(`python -m crux.explain.ideal`).
 
 ## Cases
 
@@ -21,7 +20,7 @@ study.
 | `instance` | `toy_abc` (`tests/fixtures/toy_abc.json`) or a benchmark instance id |
 | `source` | `toy`, `real` or `planted` |
 | `requirements` | the requests, exactly as the instance has them |
-| `change` | the requests in the conflict, i.e. the ones a reader could change. Correct answers for the user study's "which requirement would you change?" |
+| `change` | the requests in the conflict, i.e. the ones a reader could change |
 | `ideal` | the message, at most three lines |
 | `fixes` | changes that make the requests installable, each `{"replace": {old: new}}` or `{"remove": [req]}`; empty when no fix exists inside the snapshot |
 | `notes` | why the case is in the set |

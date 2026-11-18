@@ -544,7 +544,7 @@ Command: `python -m crux.explain.corebench --out results/core-boto3 --no-synthet
 
 ## 9. Open items and handover
 
-**For Parth Gupta (renderer, user study).** Call `explain(problem)`; group
+**For Parth Gupta (renderer).** Call `explain(problem)`; group
 the core as in section 3. Large real cores (hundreds of boto3 edges) must be
 summarised by package and dependency, with the version bounds, not listed. The 30 hand-written ideal
 explanations can use `toy_abc` and the derived real cases in
