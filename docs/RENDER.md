@@ -1,14 +1,12 @@
-# Crux explanation messages, ideal explanations and the user study
+# Crux explanation messages and ideal explanations
 
 Working context for the part of Crux that turns a minimal unsatisfiable core
 into a message a developer can act on, the hand-written ideal explanations it
-is compared against, the comparison with pip's and uv's messages, and the user
-study. It records what exists, why it is built the way it is, what was measured,
+is compared against, and the comparison with pip's and uv's messages. It records what exists, why it is built the way it is, what was measured,
 and what is still open. **When you change something here, update section 9
 (open items) and section 10 (change log).**
 
-Owner: **Parth Gupta** (proposal 4.2: "English renderer, hand-written ideal
-explanations, user study design and analysis"). Built 2026-11-16 on branch
+Owner: **Parth Gupta** (English renderer, hand-written ideal explanations). Built 2026-11-16 on branch
 `parth-gupta/english-renderer-ideals-user-study`, starting from `main` at
 `5eb0d7a`.
 
@@ -25,8 +23,6 @@ explanations, user study design and analysis"). Built 2026-11-16 on branch
 | 30 hand-written ideal explanations | `benchmarks/ideal/` | written; **review pending** (`"reviewed": false`) |
 | Renderer against the ideals | `crux/explain/ideal.py` | done |
 | Crux's messages against pip and uv | `crux/benchmark/crux_messages.py` | done; results in `benchmarks/results/MESSAGES.md` |
-| User study: protocol, items, form | `study/`, `crux/benchmark/study.py` | done; **not run** |
-| User study analysis and power simulation | `crux/benchmark/study_analysis.py` | done; tested on simulated data |
 
 **Headline facts (details and caveats below).**
 - On all 259 benchmark conflicts (198 planted, 61 real), every message is
@@ -48,9 +44,6 @@ explanations, user study design and analysis"). Built 2026-11-16 on branch
 - Against the 30 ideal explanations, Crux names the requests to change in 30 of 30, at a similar
   length (median 197 characters against 190). The ideals always end with a fix and Crux never
   suggests one: the main gap (section 9).
-- The user study is designed, its analysis is written and verified, and **it has not been run**.
-  The power simulation says that at 18 participants, H2 (accuracy) is close to a coin flip
-  (section 7.4).
 
 ---
 
@@ -101,12 +94,6 @@ python -m crux.explain.ideal
 # copy drop reasons into the real instances (needs the corpus database, 1.3 GB)
 python -m crux.benchmark.add_drops --db data/corpus.db \
     --instances benchmarks/corpus/instances.jsonl.gz
-
-# user study: materials, then analysis (or a simulated run, or a power estimate)
-python -m crux.benchmark.study --participants 18 --out study
-python -m crux.benchmark.study_analysis --responses study/responses
-python -m crux.benchmark.study_analysis --simulate 18 --responses study/simulated
-python -m crux.benchmark.study_analysis --power 12,18,24,36
 ```
 
 ---
@@ -310,31 +297,6 @@ Every fact in them is checked against the data, so wording can be wrong but fact
 - every proposed fix makes the problem installable, with the plan checked independently;
 - the three "no fix" cases have no single-request fix.
 
-### 4.8 The user study
-
-The design is in `study/PROTOCOL.md`, fixed before any data.
-
-**Design.** Within-subject: 8 conflicts, each shown in one of three styles. The styles are
-assigned by a Latin square over three groups, the order is shuffled per participant, and a
-practice round shows each style once.
-
-**Questions.**
-- **Q1 (primary, timed):** "Which requirement would you change?"
-- **Q2:** "Which package is the conflict about?". Q2 exists because most real conflicts have
-  only the conflicting requests in the file, which makes Q1 guessable.
-
-**Items, chosen by rule** (`select_items`).
-- Real: the only two clean conflicts with decoy requests, plus the two with the most statements.
-- Planted: for each depth 3 to 6, the first deep instance with a decoy request and a pip message.
-
-The planted half favours Crux (deep conflicts are where pip is weak). The protocol says so, and
-results are split into real and planted.
-
-**Analysis** (`study_analysis.py`). Per participant and style, it computes accuracy and the median
-time to a correct answer. It then runs four exact Wilcoxon signed-rank tests with the Holm
-correction. H1 or H2 is supported only when the test is significant and the effect reaches its
-target. The exact test is hand-written, because the project has no scipy.
-
 ---
 
 ## 5. Files
@@ -349,11 +311,8 @@ target. The exact test is hand-written, because the project has no scipy.
 | `crux/benchmark/add_drops.py` | copies drop reasons into the real instances (CLI) |
 | `crux/benchmark/messages.py` | `words` measure and the message rule for Crux (additive) |
 | `crux/benchmark/crux_messages.py` | Crux's messages on the benchmark; writes `MESSAGES.md` (CLI) |
-| `crux/benchmark/study.py`, `study_form.html` | study items, Latin square, form (CLI) |
-| `crux/benchmark/study_analysis.py` | scoring, tests, report, simulation, power (CLI) |
 | `benchmarks/ideal/` | `ideal.jsonl`, `README.md` |
 | `benchmarks/results/MESSAGES.md`, `*/crux_messages.jsonl` | the message comparison and every Crux message |
-| `study/` | `PROTOCOL.md`, `items.json`, `assignments.csv`, `form.html`; `responses/` once sessions run |
 
 ---
 
@@ -367,8 +326,6 @@ target. The exact test is hand-written, because the project has no scipy.
 | `tests/data/test_graph.py` | 22 (8 new) | `why_missing` from dicts and databases, `as_of`, edge drops ignored |
 | `tests/benchmark/test_crux_messages.py` | 8 | Crux, pip and uv measured by one function on one instance with real pip and uv output |
 | `tests/benchmark/test_add_drops.py` | 5 | only unmet requirements looked up; nothing else changes; idempotent |
-| `tests/benchmark/test_study.py` | 7 | items follow the rule; answer keys; Latin square balance; no answers in the form |
-| `tests/benchmark/test_study_analysis.py` | 16 | exact Wilcoxon against enumeration; Holm; scoring and exclusions; a built-in effect is found and none is invented |
 
 **Deliberate breaks.** For each module, the code was broken on purpose and the tests were re-run.
 Every break below is caught; each one is listed with the problem it introduced.
@@ -402,22 +359,6 @@ Every break below is caught; each one is listed with the problem it introduced.
   - a wrong `change` list;
   - a "fix" for an unfixable case;
   - a changed provenance.
-- **Analysis (7):**
-  - a one-sided p-value;
-  - timing wrong answers too;
-  - a broken Holm correction;
-  - no 5-minute rule;
-  - zero differences kept;
-  - wrong tie ranks;
-  - H1 without the 30% target.
-
-**The exact Wilcoxon test** matches enumeration of every sign pattern in 400 random cases with
-ties, and scipy's exact test in 300 cases without ties (checked outside the repo, since scipy is
-not a dependency).
-
-**The form** was driven end to end in a headless browser. It rejects a bad participant number,
-gives practice feedback, records 8 timed trials, skips Q2 where it is not asked, and produces the
-JSON. No console errors.
 
 ---
 
@@ -470,21 +411,6 @@ and through which packages, so its length stays flat.
 The difference is content. Every ideal with a fix ends with one, such as "pin protobuf below 6:
 5.29.4 works", and Crux never suggests one.
 
-### 7.4 User study
-
-**Not run yet.** Before any data, the power simulation (assumed effects: Crux read 40% faster;
-accuracy 95% / 90% for Crux against 90% / 55% for pip, real / planted) gives:
-
-| participants | H1 (time) supported | H2 (accuracy) supported |
-|---|---|---|
-| 12 | 89% | 24% |
-| 18 | 93% | 51% |
-| 24 | 97% | 71% |
-| 36 | 98% | 85% |
-
-With no real difference, either hypothesis comes out supported in at most 10% of simulated
-studies.
-
 ---
 
 ## 8. Against the proposal's targets
@@ -494,23 +420,16 @@ studies.
 | Message size | median at most half of pip's on the hard corpus | **Met** as the benchmark defines a message (real 4 vs 10 lines, 24 vs 79 words; planted 4 vs 11, 31 vs 83). **Not met** without pip's fixed advice block (Crux 55 to 67% of pip). Both are reported |
 | Message names what to change | (renderer design) | Every request in the conflict is named in every message (259 of 259; 36 of 36 unique real cores, 169 of 169 planted) |
 | 30 hand-written ideal explanations | written | 30 written and checked against the data; review by a second team member pending |
-| Human comprehension | at least 30% faster median than pip; accuracy at least 15 points higher | **Not measured yet.** Study designed and its analysis verified. At 18 participants, H2 is under-powered (7.4) |
 
 ---
 
 ## 9. Open items and handover
 
 **Mine, still open.**
-- **Run the study** (`study/PROTOCOL.md`), in this order:
-  1. ask course staff whether approval is needed;
-  2. pilot with 2 people;
-  3. recruit 18 participants (24 if possible, section 7.4);
-  4. analyse with `study_analysis`.
 - **Review the ideal explanations** and set `"reviewed": true`.
 - **Suggest a fix in the message.** The ideals' main advantage, for example "pin protobuf below 6:
   5.29.4 works". A candidate fix can be checked the same way `test_ideal.py` checks the ideals'
-  fixes, by solving again with the requirement relaxed. Not done, and it would change the
-  messages the study shows, so it has to be decided before the study runs, not after.
+  fixes, by solving again with the requirement relaxed. Not done.
 - **"(the exact range differs by release)"** is honest but long. A shorter summary, such as the
   lowest bound only, needs care to stay true.
 
@@ -524,9 +443,7 @@ studies.
 - `messages.py` gained a `words` measure and a message rule for Crux.
 - `docs/BENCHMARK.md` now points to `MESSAGES.md`.
 
-**For the report.** Quote both message-size counts, with and without pip's advice. State that the
-study's planted items favour Crux by design, and that two real items cannot separate the styles on
-accuracy.
+**For the report.** Quote both message-size counts, with and without pip's advice.
 
 ---
 
@@ -534,5 +451,4 @@ accuracy.
 
 - 2026-11-16: grouping (`df9667e` `why_missing`, `ef9789c` grouping), renderer
   (`db26b15`), ideal explanations (`5ac72e1`), message comparison (`47251f1`),
-  study design (`9fdce57`), drop reasons in the real instances (`4654e6c`),
-  study analysis and power simulation (`33d5157`).
+  drop reasons in the real instances (`4654e6c`).

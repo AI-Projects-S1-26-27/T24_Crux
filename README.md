@@ -261,7 +261,7 @@ Owner: Arrya Sridhar. Method in `docs/BENCHMARK.md`, every number in
   (`crux.explain`) scored against the planted cores, and checked on the real
   conflicts (`benchmarks/results/cores/`).
 
-## Explanation messages and the user study
+## Explanation messages
 
 Owner: Parth Gupta. Everything is in `docs/RENDER.md`.
 
@@ -274,8 +274,6 @@ Owner: Parth Gupta. Everything is in `docs/RENDER.md`.
   and uv's 6 and 40.
 - `benchmarks/ideal/`: 30 hand-written ideal explanations, every fact checked against the data;
   `python -m crux.explain.ideal` compares the renderer with them.
-- `study/`: the user study (protocol, items, a self-contained form) and
-  `python -m crux.benchmark.study_analysis` for its analysis. Designed and tested; not run yet.
 
 ```bash
 python - <<'EOF'
@@ -364,9 +362,8 @@ crux/cli.py              the `crux` command (`crux resolve`); crux/__main__.py f
 crux/resolver/           CSP solver: C0 to C4, oracle, plan checker
 crux/explain/            minimal cores, grouping, the English renderer, ideal-explanation check
 crux/benchmark/          planted generator, real-failure corpus, pip/uv/Crux harness, report,
-                         Crux's messages, drop reasons, user study and its analysis
+                         Crux's messages, drop reasons
 benchmarks/              planted instances, corpus, ideal explanations, committed results and figures
-study/                   user study: protocol, items, assignments, form
 tests/                   tests by component (data, resolver, explain, benchmark)
 tests/fixtures/          offline fixtures
 scripts/                 throwaway spike scripts (spike.py, spike2.py)
